@@ -16,6 +16,6 @@ Note: Your extracted directory only needs to have app.html, nw.exe, icon.png, ic
 The nwjs.zip has some extra files (dlls, nwjc.exe, locales) in the zip but they aren't used for this application and can be deleted.
 
 # Usage
-1. Open the nw.exe, it will start downloading the item sets if the champion.gg can be reached.
+1. Open the nw.exe, it will start downloading the item sets if the champion.gg site can be reached and they haven't changed their code in a way that breaks the app.
 2. Copy the folders with champion names from .\ItemSets\Date_AllSets\ to Your_League_Install_Directory\Config\Champions\
 3. Play League!
