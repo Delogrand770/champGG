@@ -1,0 +1,18 @@
+{
+  "main": "app.html",
+  "name": "champGG",
+  "description": "Gets the latest Champion.gg builds for League of Legends",
+  "version": "1.0.0",
+  "window": {
+    "title": "champGG",
+    "icon": "icon.png",
+    "toolbar": false,
+    "frame": true,
+    "width": 350,
+    "height": 600,
+    "position": "center",
+    "min_width": 350,
+    "min_height": 600,
+    "resizable": true
+  }
+}

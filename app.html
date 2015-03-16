@@ -1,0 +1,272 @@
+<!--
+Ported by Gavin Delphia in 2015
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<title>Champion.gg ItemSet Downloader</title>
+
+<style>
+html {
+  font-family: sans-serif;
+  -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+}
+body{
+	margin: 5px;
+}
+div {
+	border: 0px solid;
+}
+</style>
+
+
+<script>
+var App = {
+	ini:function(){
+		App.getAllSets();
+		// App.getOneSet("Kayle", "Middle");
+		// App.getOneSet("Kayle", "Top");
+		// App.getOneSet("Kayle", "ADC");
+		// App.getOneSet("Kayle", "Jungle");
+		//Middle, ADC, Top, Jungle, Support
+	},
+	getAllSets:function(){
+		App.getPage("http://champion.gg/", function(data){App.getAllSetsCB(data)});
+	},
+	getAllSetsCB:function(data){
+		if (data){
+			//console.log("Creating item sets for all champions...");
+			App.log("Creating item sets for all champions...", "#c0c0c0");
+			var saveFolder = "ItemSets/" + new Date().toISOString().slice(0, 10) + "_AllSets";
+			var list = data.match(/<a href="([^"]*)" style="display:block">/g);
+
+			for (var champPage in list){
+				var data = list[champPage].split("/");
+				var champ = data[2];
+				var role = data[3].split('"')[0];
+				var url = "http://champion.gg/champion/" + champ + "/" + role;
+
+				var passon = {champ:champ, role:role, saveFolder: saveFolder};
+				App.getPage(url, function(data, passon){App.getOneSetCB(data, passon)}, passon);
+			}
+		} else {
+			//console.log("Error");
+		}
+	},
+	getOneSet:function(champ, role){
+		var saveFolder = "ItemSets/" + new Date().toISOString().slice(0, 10) + "_Singles";
+		var url = "http://champion.gg/champion/" + champ + "/" + role;
+
+		var passon = {champ:champ, role:role, saveFolder: saveFolder};
+		App.getPage(url, function(data, passon){App.getOneSetCB(data, passon)}, passon);
+	},
+	getOneSetCB:function(page, passon){
+		var champ = passon.champ;
+		var role = passon.role;
+		var saveFolder = passon.saveFolder;
+
+		var data = App.getBetween(page, "matchupData.championData = ", "matchupData.patchHistory");
+		var data = data.trim();
+		var data = data.substring(0, data.length - 1); //Remove last ; so the JSON will parse
+
+		try {
+			var champJSON = JSON.parse(data);
+		} catch (err) {
+			App.log("No data is available for " + champ + " in " + role + " role", "#cc0000");
+			return;
+		}
+		var currentPatch = App.getBetween(page, "<small>Patch <strong>", "</strong>");
+		var firstMG = champJSON["firstItems"]["mostGames"];
+		var firstHWP = champJSON["firstItems"]["highestWinPercent"];
+		var fullMG = champJSON["items"]["mostGames"];
+		var fullHWP = champJSON["items"]["highestWinPercent"];
+
+		if (!firstMG["games"] || !firstHWP["games"] || !fullMG["games"] || !fullHWP["games"]){
+			App.log("Full data is unavailable for " + champ + " in " + role + " role", "#cc0000");
+			//console.log("Woops, full data is unavailable for " + champ + " in " + role + " role");
+			return;
+		}
+
+		var consumeItems = [2003, 2004, 2044, 2043, 2041, 2138, 2137, 2139, 2140];
+		var trinketItems = [3340, 3341, 3342];
+
+		var firstMGBlock = {
+			"items": App.array_merge(App.getItems(firstMG), App.getItems(trinketItems, true)),
+			"type": "Most Frequent Starters (" + firstMG["winPercent"] + "% wins over " + firstMG["games"] + " games)"
+		};
+
+		var firstHWPBlock = {
+			"items": App.array_merge(App.getItems(firstHWP), App.getItems(trinketItems, true)),
+			"type": "Highest Win Rate Starters (" + firstHWP["winPercent"] + "% wins over " + firstHWP["games"] + " games)"
+		};
+		var fullMGBlock = {
+			"items": App.getItems(fullMG),
+			"type": "Most Frequent Build (" + fullMG["winPercent"] + "% wins over " + fullMG["games"] + " games)"
+		};
+		var fullHWPBlock = {
+			"items": App.getItems(fullHWP),
+			"type": "Highest Win Rate Build (" + fullHWP["winPercent"] + "% wins over " + fullHWP["games"] + " games)"
+		};
+		var consumeBlock = {
+			"items": App.getItems(consumeItems, true),
+			"type": "Consumables"
+		};
+
+
+		var roleFormatted = champJSON["role"].substring(0, 1) + champJSON["role"].toLowerCase().substring(1);
+		var itemSetArr = {
+			"map": "any",
+			"isGlobalForChampions": false,
+			"blocks": [
+				firstMGBlock,
+				firstHWPBlock,
+				fullMGBlock,
+				fullHWPBlock,
+				consumeBlock
+			],
+			"associatedChampions": [],
+			"title": roleFormatted + " " + currentPatch,
+			"priority": false,
+			"mode": "any",
+			"isGlobalForMaps": true,
+			"associatedMaps": [],
+			"type": "custom",
+			"sortrank": 1,
+			"champion": champJSON["key"]
+		};
+
+		if (saveFolder == null) {
+			saveFolder = champJSON["key"] + "/Recommended";
+		} else {
+			saveFolder = saveFolder + "/" + champJSON["key"] + "/Recommended";
+		}
+
+		if (!App.folderExists(saveFolder)) {
+			App.mkdir(saveFolder);
+		}
+
+		var fileName = currentPatch.replace('.','_') + "_" + roleFormatted + ".json";
+		fileName = saveFolder + "/" + fileName;
+
+		var itemSetJSON = JSON.stringify(itemSetArr, null, '\t');
+		App.writeFile(fileName, itemSetJSON);
+
+		App.log("Saved set for " + champ + " in " + role + " role", "#00cc00");
+		//console.log("Saved set for " + champ + " in " + role + " role to: " + fileName);
+	},
+	array_merge:function(arr1, arr2){
+		var result = [];
+		return result.concat(arr1, arr2);
+	},
+	getPage:function(url, callback, passon) {
+		var http = require("http");
+
+		http.get(url, function(res) {
+
+			var data = "";
+			res.on('data', function (chunk) {
+				data += chunk;
+			});
+
+			res.on("end", function() {
+				callback(data, passon);
+			});
+
+		}).on("error", function() {
+			callback(null);
+		});
+	},
+	getBetween:function(content, start, end){
+		var result = content.split(start);
+		if (result[1]){
+			var result = result[1].split(end);
+			return result[0];
+		}
+		return '';
+	},
+	getItems:function(input, fromPreset) {
+		var fromPreset = fromPreset || false;
+		var items = [];
+		if (fromPreset) {
+			for (item in input) {
+				items.push({
+					"count" : 1,
+					"id" : input[item] + ""
+				});
+			}
+		} else {
+			var itemIDs = {};
+			for (item in input["items"]) {
+				var id = input["items"][item]["id"];
+				id = (id == 2010) ? 2003 : id;
+				
+				if (itemIDs[id]){
+					itemIDs[id]++;
+				} else {
+					itemIDs[id] = 1;
+				}
+
+			}
+
+			var count = 0;
+			for (itemID in itemIDs) {
+				items.push({
+					"count": itemIDs[itemID],
+					"id": itemID + ""
+				});
+			}
+		}
+		return items;
+	},
+	writeFile:function(name, data){
+		var fs = require('fs');
+		fs.writeFileSync(name, data);
+	},
+	folderExists:function(path){
+		var fs = require('fs');
+		try {
+			var stats = fs.lstatSync(path);
+			if (stats.isFolder()) {
+				return true;
+			}
+		} catch (e){
+			return false;
+		}
+	},
+	mkdir:function(path, root){
+		var fs = require('fs');
+		var dirs = path.split('/'), dir = dirs.shift(), root = (root||'')+dir+'/';
+
+		try { fs.mkdirSync(root); }
+		catch (e) {
+			//dir wasn't made, something went wrong
+			if(!fs.statSync(root).isDirectory()) throw new Error(e);
+		}
+
+		return !dirs.length||App.mkdir(dirs.join('/'), root);
+	},
+	log:function(data, color){
+		var ele = document.getElementById("output");
+		ele.innerHTML += '<font color="' + color + '">' + data + "</font><br>";
+		ele.scrollTop = ele.scrollHeight;
+	}
+};
+
+</script>
+<body onload="App.ini()">
+
+<div id="output" style="height:510px;width:100%;overflow-y:scroll;font-size:10px;color:#c0c0c0;"></div>
+<br>
+<span style="font-size:10px;color:#c0c0c0;" id="credits">
+<center>
+Original PHP script by ebildude123 <a href="https://github.com/ebildude123/champion.gg-item-set-creator">Github</a><br>
+Item Data provided by <a href="champion.gg">champion.gg</a><br>
+Ported by Gavin Delphia
+</center>
+</span>
+
+</body>
+</html>
