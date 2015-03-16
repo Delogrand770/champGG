@@ -13,4 +13,4 @@ Yes you can (well at least from the compiled code)
 
 Note: Your extracted directory only needs to have app.html, nw.exe, icon.png, icudtl.dat, nw.pak and package.json
 
-The nwjs.zip has some extra files (dll files and nwjc.exe) in the zip but they aren't used for this application
+The nwjs.zip has some extra files (dll files and nwjc.exe) in the zip but they aren't used for this application and can be deleted.
