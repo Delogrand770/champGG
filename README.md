@@ -2,7 +2,7 @@
 Downloads item sets from champion.gg to be used with a League of Legends client
 
 
-# EXEs are Scary. Can I be sure you aren't hacking me?
+# Can I be sure you aren't hacking me?
 
 Yes you can (well at least from the compiled code)
 
