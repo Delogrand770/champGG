@@ -2,7 +2,7 @@
 Downloads item sets from champion.gg to be used with a League of Legends client
 
 
-# Setup / Safety
+# Setup
 
 I use nwjs.io to have direct access to node.js. This means an exe file is involved. I won't provide the exe that way you can download the original/safe version from the creators themselves.
 
