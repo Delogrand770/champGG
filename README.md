@@ -2,9 +2,9 @@
 Downloads item sets from champion.gg to be used with a League of Legends client
 
 
-# Can I be sure you aren't hacking me?
+# Setup / Safety
 
-Yes you can (well at least from the compiled code)
+I use nwjs.io to have direct access to node.js. This means an exe file is involved. I won't provide the exe that way you can download the original/safe version from the creators themselves.
 
 1. Visit http://nwjs.io/ (formerly node-webkit) and download the version for your operating system.
 2. Extract the archive
