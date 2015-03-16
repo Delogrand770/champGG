@@ -10,4 +10,6 @@ Yes you can (well at least from the compiled code)
 2. Extract the archive
 3. Download and extract the zip of this repoistory into the same directory the nwjs.zip extracted to
 4. The files you get from this repo are html/json and an image file so you can see everything that is happening
-5. Your extracted directory only needs to have app.html, nw.exe, icon.png, icudtl.dat, nw.pak and package.json
+
+Note: Your extracted directory only needs to have app.html, nw.exe, icon.png, icudtl.dat, nw.pak and package.json
+nw.js has some extra files in the zip but they aren't used for this application
