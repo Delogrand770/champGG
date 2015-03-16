@@ -14,3 +14,10 @@ Yes you can (well at least from the compiled code)
 Note: Your extracted directory only needs to have app.html, nw.exe, icon.png, icudtl.dat, nw.pak and package.json
 
 The nwjs.zip has some extra files (dlls, nwjc.exe, locales) in the zip but they aren't used for this application and can be deleted.
+
+# Usage
+When the app opens, it will start downloading the item sets if the champion.gg can be reached.
+
+Next copy the folders with champion names from .\ItemSets\Date_AllSets\ to
+
+Your_League_Install_Directory\Config\Champions
