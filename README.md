@@ -10,4 +10,4 @@ Yes you can (well at least from the compiled code)
 2. Extract the exe, pak and dat file from the nwjs zip
 3. Download and Extract the zip of this repoistory
 4. Replace the exe, pak and dat file with the known good files from nwjs.io
-5. The rest of the files are html/json and a png image file
+5. The rest of the files are html/json and a png image file so you can look and see what's happening
