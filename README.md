@@ -34,6 +34,6 @@ Original PHP script by ebildude123 - https://github.com/ebildude123/champion.gg-
 Item set data provided by https://champion.gg/
 
 
-# Setup is complex just give me the files
+# Setup is too complex, just give me the files
 
 https://dl.dropboxusercontent.com/u/5135312/champGG_.zip
