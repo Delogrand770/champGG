@@ -27,7 +27,7 @@ div {
 var App = {
 	ini:function(){
 		App.getAllSets();
-		// App.getOneSet("Kayle", "Middle");
+		//App.getOneSet("Kayle", "Middle");
 		// App.getOneSet("Kayle", "Top");
 		// App.getOneSet("Kayle", "ADC");
 		// App.getOneSet("Kayle", "Jungle");
@@ -83,6 +83,8 @@ var App = {
 		var firstHWP = champJSON["firstItems"]["highestWinPercent"];
 		var fullMG = champJSON["items"]["mostGames"];
 		var fullHWP = champJSON["items"]["highestWinPercent"];
+		var skillsHWP = champJSON["skills"]["highestWinPercent"]["order"];
+		var skillsMG = champJSON["skills"]["mostGames"]["order"];
 
 		if (!firstMG["games"] || !firstHWP["games"] || !fullMG["games"] || !fullHWP["games"]){
 			App.log("Full data is unavailable for " + champ + " in " + role + " role", "#cc0000");
@@ -104,11 +106,11 @@ var App = {
 		};
 		var fullMGBlock = {
 			"items": App.getItems(fullMG),
-			"type": "Most Frequent Build (" + fullMG["winPercent"] + "% wins over " + fullMG["games"] + " games)"
+			"type": "Most Frequent Build, Skill order: " + App.getSkillData(skillsMG) + " (" + fullMG["winPercent"] + "% wins over " + fullMG["games"] + " games)"
 		};
 		var fullHWPBlock = {
 			"items": App.getItems(fullHWP),
-			"type": "Highest Win Rate Build (" + fullHWP["winPercent"] + "% wins over " + fullHWP["games"] + " games)"
+			"type": "Highest Win Rate Build, Skill order: " + App.getSkillData(skillsHWP) + " (" + fullHWP["winPercent"] + "% wins over " + fullHWP["games"] + " games)"
 		};
 		var consumeBlock = {
 			"items": App.getItems(consumeItems, true),
@@ -156,6 +158,26 @@ var App = {
 
 		App.log("Saved set for " + champ + " in " + role + " role", "#00cc00");
 		//console.log("Saved set for " + champ + " in " + role + " role to: " + fileName);
+	},
+	getSkillData:function(arr){
+		var decode = ["Q", "W", "E"];
+		var totals = [0, 0, 0, 0];
+		var results = [];
+		for (skill in arr) {
+			var index = parseInt(arr[skill]) - 1;
+			totals[index]++;
+			if (totals[index] >= 5){
+				results.push(index);
+			}
+		}
+
+		var decoded = [];
+		for (skill in results){
+			decoded.push(decode[results[skill]]);
+		}
+
+		return decoded.join(">");
+
 	},
 	array_merge:function(arr1, arr2){
 		var result = [];
