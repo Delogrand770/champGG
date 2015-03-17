@@ -24,3 +24,8 @@ The nwjs.zip has some extra files (dlls, nwjc.exe, locales) in the zip but they 
 According to Reddit: A rioter did this originally, so it's safe. it doesn't affect gameplay, and you're not doing anything you couldn't do manually if you wanted to waste dozens of hours of your life every patch. Go wild!
 
 http://www.reddit.com/r/leagueoflegends/comments/2z7hkw/championgg_item_sets_updated_for_patch_55/cpgm2ws
+
+# Credits
+Original PHP script by ebildude123 - https://github.com/ebildude123/champion.gg-item-set-creator
+
+Item set data provided by https://champion.gg/
