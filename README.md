@@ -21,7 +21,7 @@ The nwjs.zip has some extra files (dlls, nwjc.exe, locales) in the zip but they 
 
 # Usage
 
-1. Open the nw.exe, it will start downloading the item sets if the champion.gg site can be reached and they haven't changed their code in a way that breaks the app.
+1. Open the exe, choose what to include, click Download and it will start downloading the item sets if the champion.gg site can be reached and they haven't changed their code in a way that breaks the app.
 2. Copy the folders with champion names from .\ItemSets\Date_AllSets\ to Your_League_Install_Directory\Config\Champions\
 3. Play League!
 
