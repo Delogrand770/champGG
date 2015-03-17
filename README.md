@@ -1,6 +1,18 @@
 # champGG
 Downloads item sets from champion.gg to be used with a League of Legends client
 
+The program contains the options to include
+
+Most Frequent Builds
+
+Highest Win% Builds
+
+Starter Items
+
+Consumables
+
+Skill Order
+
 
 # Setup
 
