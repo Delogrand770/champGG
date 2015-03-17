@@ -4,7 +4,7 @@ Downloads item sets from champion.gg to be used with a League of Legends client
 
 # Setup
 
-I use nwjs.io to have direct access to node.js. I won't provide the nw.exe that way you can download the original/safe version from the creators themselves.
+I use nwjs.io to have direct access to node.js from the dom. I won't provide the nw.exe that way you can download the original/safe version from the creators themselves.
 
 1. Visit http://nwjs.io/ (formerly node-webkit) and download the version for your operating system.
 2. Extract the archive
