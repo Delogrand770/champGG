@@ -27,7 +27,9 @@ div {
 var App = {
 	ini:function(){
 		App.getAllSets();
-		//App.getOneSet("Kayle", "Middle");
+		// App.getOneSet("Fizz", "Top");
+		// App.getOneSet("Fizz", "Middle");
+		// App.getOneSet("Fizz", "Jungle");
 		// App.getOneSet("Kayle", "Top");
 		// App.getOneSet("Kayle", "ADC");
 		// App.getOneSet("Kayle", "Jungle");
@@ -120,6 +122,8 @@ var App = {
 			"type": "Consumables"
 		};
 
+		//console.log(fullHWP);
+		//console.log(fullHWPBlock);
 
 		var roleFormatted = champJSON["role"].substring(0, 1) + champJSON["role"].toLowerCase().substring(1);
 
@@ -248,26 +252,29 @@ var App = {
 				});
 			}
 		} else {
-			var itemIDs = {};
+			//var itemIDs = {};
 			for (item in input["items"]) {
 				var id = input["items"][item]["id"];
 				id = (id == 2010) ? 2003 : id;
 				
-				if (itemIDs[id]){
-					itemIDs[id]++;
-				} else {
-					itemIDs[id] = 1;
-				}
-
-			}
-
-			var count = 0;
-			for (itemID in itemIDs) {
+				// if (itemIDs[id]){
+				// 	itemIDs[id]++;
+				// } else {
+				// 	itemIDs[id] = 1;
+				// }
 				items.push({
-					"count": itemIDs[itemID],
-					"id": itemID + ""
+					"count": 1,
+					"id": id + ""
 				});
 			}
+
+			// var count = 0;
+			// for (itemID in itemIDs) {
+			// 	items.push({
+			// 		"count": itemIDs[itemID],
+			// 		"id": itemID + ""
+			// 	});
+			// }
 		}
 		return items;
 	},
@@ -341,7 +348,7 @@ var App = {
 <span style="font-size:10px;color:#c0c0c0;" id="credits">
 <center>
 Original PHP script by ebildude123 <a href="https://github.com/ebildude123/champion.gg-item-set-creator">Github</a><br>
-Item Data provided by <a href="champion.gg">champion.gg</a><br>
+Item Data provided by <a href="champion.gg">http://champion.gg/</a><br>
 Ported by Gavin Delphia
 </center>
 </span>
