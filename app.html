@@ -12,7 +12,7 @@ Ported by Gavin Delphia in 2015
 html {
   font-family: sans-serif;
   -webkit-text-size-adjust: 100%;
-      -ms-text-size-adjust: 100%;
+	  -ms-text-size-adjust: 100%;
 }
 body{
 	margin: 5px;
@@ -45,7 +45,7 @@ var App = {
 		if (data){
 			//console.log("Creating item sets for all champions...");
 			App.log("Creating item sets for all champions...", "#c0c0c0");
-			var saveFolder = "ItemSets/" + new Date().toISOString().slice(0, 10) + "_AllSets";
+			var saveFolder = "ItemSets/" + App.betterDate() + " - ";
 			var list = data.match(/<a href="([^"]*)" style="display:block">/g);
 
 			for (var champPage in list){
@@ -62,7 +62,7 @@ var App = {
 		}
 	},
 	getOneSet:function(champ, role){
-		var saveFolder = "ItemSets/" + new Date().toISOString().slice(0, 10) + "_Singles";
+		var saveFolder = "ItemSets/" + App.betterDate() + " - SINGLES - ";
 		var url = "http://champion.gg/champion/" + champ + "/" + role;
 
 		var passon = {champ:champ, role:role, saveFolder: saveFolder};
@@ -164,6 +164,8 @@ var App = {
 			"sortrank": 1,
 			"champion": champJSON["key"]
 		};
+
+		saveFolder += "PATCH " + currentPatch.replace('.','_');
 
 		if (saveFolder == null) {
 			saveFolder = champJSON["key"] + "/Recommended";
@@ -309,6 +311,17 @@ var App = {
 		var ele = document.getElementById("output");
 		ele.innerHTML += '<font color="' + color + '">' + data + "</font><br>";
 		ele.scrollTop = ele.scrollHeight;
+	},
+	betterDate:function(){
+		var months= ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+		var today = new Date();
+		var year = today.getFullYear();
+		var month = today.getMonth() + 1;
+		var day = today.getDate();
+		day = (day < 10) ? "0" + day : day;
+		
+		var date = day + " " + months[month] + " " + year;
+		return 	date;
 	}
 };
 
