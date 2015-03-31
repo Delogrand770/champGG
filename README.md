@@ -40,6 +40,6 @@ Item set data provided by https://champion.gg/
 
 # Setup is too complex, just give me the files
 
-Most browsers will give a warning that this zip could be dangerous since contains an exe file.
+Most browsers will give a warning that this zip could be dangerous since it contains an exe file.
 
 https://dl.dropboxusercontent.com/u/5135312/champGG_.zip
