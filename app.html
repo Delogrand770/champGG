@@ -101,12 +101,12 @@ var App = {
 		var trinketItems = [3340, 3341, 3342];
 
 		var firstMGBlock = {
-			"items": App.array_merge(App.getItems(firstMG), App.getItems(trinketItems, true)),
+			"items": App.array_merge(App.getItems(firstMG, false, true), App.getItems(trinketItems, true)),
 			"type": "Most Frequent Starters (" + firstMG["winPercent"] + "% wins over " + firstMG["games"] + " games)"
 		};
 
 		var firstHWPBlock = {
-			"items": App.array_merge(App.getItems(firstHWP), App.getItems(trinketItems, true)),
+			"items": App.array_merge(App.getItems(firstHWP, false, true), App.getItems(trinketItems, true)),
 			"type": "Highest Win Rate Starters (" + firstHWP["winPercent"] + "% wins over " + firstHWP["games"] + " games)"
 		};
 		var fullMGBlock = {
@@ -122,8 +122,8 @@ var App = {
 			"type": "Consumables"
 		};
 
-		//console.log(fullHWP);
-		//console.log(fullHWPBlock);
+		// console.log(firstHWP);
+		// console.log(firstMG);
 
 		var roleFormatted = champJSON["role"].substring(0, 1) + champJSON["role"].toLowerCase().substring(1);
 
@@ -243,8 +243,13 @@ var App = {
 		}
 		return '';
 	},
-	getItems:function(input, fromPreset) {
+	isInArray:function(arr, key){
+		for (item in arr){
+		}
+	},
+	getItems:function(input, fromPreset, starters) {
 		var fromPreset = fromPreset || false;
+		var starters = starters || false;
 		var items = [];
 		if (fromPreset) {
 			for (item in input) {
@@ -254,30 +259,37 @@ var App = {
 				});
 			}
 		} else {
-			//var itemIDs = {};
+			var itemIDs = {};
+
 			for (item in input["items"]) {
 				var id = input["items"][item]["id"];
-				id = (id == 2010) ? 2003 : id;
-
-				// if (itemIDs[id]){
-				// 	itemIDs[id]++;
-				// } else {
-				// 	itemIDs[id] = 1;
-				// }
-				items.push({
-					"count": 1,
-					"id": id + ""
-				});
+				id = (id == 2010) ? 2003 : id; //Convert total biscuit to health pot. If they have the mastery the pots will be biscuits.
+				
+				if (starters){
+					if (itemIDs[id]){
+						itemIDs[id]++;
+					} else {
+						itemIDs[id] = 1;
+					}
+				} else {
+					items.push({
+						"count": 1,
+						"id": id + ""
+					});
+				}
 			}
 
-			// var count = 0;
-			// for (itemID in itemIDs) {
-			// 	items.push({
-			// 		"count": itemIDs[itemID],
-			// 		"id": itemID + ""
-			// 	});
-			// }
+			if (starters){
+				var count = 0;
+				for (itemID in itemIDs) {
+					items.push({
+						"count": itemIDs[itemID],
+						"id": itemID + ""
+					});
+				}
+			}
 		}
+
 		return items;
 	},
 	writeFile:function(name, data){
@@ -319,7 +331,7 @@ var App = {
 		var month = today.getMonth();
 		var day = today.getDate();
 		day = (day < 10) ? "0" + day : day;
-
+		
 		var date = day + " " + months[month] + " " + year;
 		return 	date;
 	}
@@ -361,7 +373,7 @@ var App = {
 <span style="font-size:10px;color:#c0c0c0;" id="credits">
 <center>
 Original PHP script by ebildude123 <a href="https://github.com/ebildude123/champion.gg-item-set-creator">Github</a><br>
-Item Data provided by <a href="champion.gg">http://champion.gg/</a><br>
+Item Data provided by <a href="http://champion.gg">http://champion.gg/</a><br>
 Ported by Gavin Delphia
 </center>
 </span>
