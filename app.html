@@ -258,7 +258,7 @@ var App = {
 			for (item in input["items"]) {
 				var id = input["items"][item]["id"];
 				id = (id == 2010) ? 2003 : id;
-				
+
 				// if (itemIDs[id]){
 				// 	itemIDs[id]++;
 				// } else {
@@ -316,10 +316,10 @@ var App = {
 		var months= ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 		var today = new Date();
 		var year = today.getFullYear();
-		var month = today.getMonth() + 1;
+		var month = today.getMonth();
 		var day = today.getDate();
 		day = (day < 10) ? "0" + day : day;
-		
+
 		var date = day + " " + months[month] + " " + year;
 		return 	date;
 	}
