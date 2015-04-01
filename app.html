@@ -25,7 +25,11 @@ div {
 
 <script>
 var App = {
+	//Experimental feature to save the files to the league directory rather than the ItemSets directory
+	leagueDirectory: "", 
+	count: {started: 0, finished: 0},
 	ini:function(){
+		App.readSettings("riot_lol_config_champions.conf");
 		App.getAllSets();
 		// App.getOneSet("Fizz", "Top");
 		// App.getOneSet("Fizz", "Middle");
@@ -48,7 +52,14 @@ var App = {
 			var saveFolder = "ItemSets/" + App.betterDate() + " - ";
 			var list = data.match(/<a href="([^"]*)" style="display:block">/g);
 
+			if (App.leagueDirectory){
+				saveFolder = App.leagueDirectory;
+				App.log("Experimental Save Feature Enabled", "#0000ee");
+				App.log(saveFolder, "#0000ee");
+			}
+
 			for (var champPage in list){
+				App.updateCount(true);
 				var data = list[champPage].split("/");
 				var champ = data[2];
 				var role = data[3].split('"')[0];
@@ -63,8 +74,12 @@ var App = {
 	},
 	getOneSet:function(champ, role){
 		var saveFolder = "ItemSets/" + App.betterDate() + " - SINGLES - ";
-		var url = "http://champion.gg/champion/" + champ + "/" + role;
 
+		if (App.leagueDirectory){
+			saveFolder = App.leagueDirectory;
+		}
+
+		var url = "http://champion.gg/champion/" + champ + "/" + role;
 		var passon = {champ:champ, role:role, saveFolder: saveFolder};
 		App.getPage(url, function(data, passon){App.getOneSetCB(data, passon)}, passon);
 	},
@@ -93,6 +108,7 @@ var App = {
 
 		if (!firstMG["games"] || !firstHWP["games"] || !fullMG["games"] || !fullHWP["games"]){
 			App.log("Full data is unavailable for " + champ + " in " + role + " role", "#cc0000");
+			App.updateCount();
 			//console.log("Woops, full data is unavailable for " + champ + " in " + role + " role");
 			return;
 		}
@@ -165,7 +181,10 @@ var App = {
 			"champion": champJSON["key"]
 		};
 
-		saveFolder += "PATCH " + currentPatch.replace('.','_');
+
+		if (!App.leagueDirectory){
+			saveFolder += "PATCH " + currentPatch.replace('.','_');
+		}
 
 		if (saveFolder == null) {
 			saveFolder = champJSON["key"] + "/Recommended";
@@ -183,8 +202,31 @@ var App = {
 		var itemSetJSON = JSON.stringify(itemSetArr, null, '\t');
 		App.writeFile(fileName, itemSetJSON);
 
+		App.updateCount();
 		App.log("Saved set for " + champ + " in " + role + " role", "#00cc00");
 		//console.log("Saved set for " + champ + " in " + role + " role to: " + fileName);
+	},
+	readSettings:function(name){
+		try {
+			var fs = require('fs');
+			var settings = fs.readFileSync(name, 'utf8');		
+			if (settings){
+				App.leagueDirectory = settings;
+			}
+		} catch (e){
+			console.log("Error reading file [" + name + "]");
+		}
+
+	},
+	updateCount:function(starting){
+		starting = starting || false;
+		if (starting){
+			App.count.started++;
+		} else {
+			App.count.finished++;
+		}
+
+		document.getElementById('status').innerHTML = "Set: " + App.count.finished + "/" + App.count.started;
 	},
 	getSkillData:function(arr){
 		var decode = ["Q", "W", "E"];
@@ -369,11 +411,11 @@ var App = {
 
 
 <div id="output" style="height:510px;width:100%;overflow-y:scroll;font-size:10px;color:#c0c0c0;display:none;"></div>
-<br>
+<span style="font-size:10px;color:#c0c0c0;" id="status"></span><br>
 <span style="font-size:10px;color:#c0c0c0;" id="credits">
 <center>
 Original PHP script by ebildude123 <a href="https://github.com/ebildude123/champion.gg-item-set-creator">Github</a><br>
-Item Data provided by <a href="http://champion.gg">http://champion.gg/</a><br>
+Item Data provided by <a href="champion.gg">http://champion.gg/</a><br>
 Ported by Gavin Delphia
 </center>
 </span>
