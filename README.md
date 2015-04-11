@@ -26,13 +26,6 @@ The nwjs.zip has some extra files (dlls, nwjc.exe, locales) in the zip but they 
 3. Play League!
 
 
-# Experimental Feature
-
-If you specify the absolute path to the /Config/Champions/ of your league of legends install directory in riot_lol_config_champions.conf then the app will auto save the files into the correct location for use with the league client. THIS IS EXPERIMENTAL and is disabled by default.
-
-For Example my riot_lol_config_champions.conf contains
-	D:\Riot Games\League of Legends\Config\Champions\
-
 # Will Riot ban me?
 
 According to Reddit: A rioter did this originally, so it's safe. it doesn't affect gameplay, and you're not doing anything you couldn't do manually if you wanted to waste dozens of hours of your life every patch. Go wild!

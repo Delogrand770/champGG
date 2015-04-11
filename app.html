@@ -29,7 +29,8 @@ var App = {
 	leagueDirectory: "", 
 	count: {started: 0, finished: 0},
 	ini:function(){
-		App.readSettings("riot_lol_config_champions.conf");
+		document.getElementById('ui2').style.display = "none";
+		App.readSettings();
 		App.getAllSets();
 		// App.getOneSet("Fizz", "Top");
 		// App.getOneSet("Fizz", "Middle");
@@ -54,7 +55,7 @@ var App = {
 
 			if (App.leagueDirectory){
 				saveFolder = App.leagueDirectory;
-				App.log("Experimental Save Feature Enabled", "#0000ee");
+				App.log("Auto Save Feature Enabled", "#0000ee");
 				App.log(saveFolder, "#0000ee");
 			}
 
@@ -98,6 +99,7 @@ var App = {
 			App.log("No data is available for " + champ + " in " + role + " role", "#cc0000");
 			return;
 		}
+		
 		var currentPatch = App.getBetween(page, "<small>Patch <strong>", "</strong>");
 		var firstMG = champJSON["firstItems"]["mostGames"];
 		var firstHWP = champJSON["firstItems"]["highestWinPercent"];
@@ -206,24 +208,13 @@ var App = {
 		App.log("Saved set for " + champ + " in " + role + " role", "#00cc00");
 		//console.log("Saved set for " + champ + " in " + role + " role to: " + fileName);
 	},
-	readSettings:function(name){
-		try {
-			var fs = require('fs');
-			var settings = fs.readFileSync(name, 'utf8');		
-			if (settings){
-				App.leagueDirectory = settings;
-			}
-		} catch (e){
-			console.log("Error reading file [" + name + "]");
-		}
-
-	},
 	updateCount:function(starting){
 		starting = starting || false;
 		if (starting){
 			App.count.started++;
 		} else {
 			App.count.finished++;
+			App.count.finished = (App.count.finished >= App.count.started) ? App.count.started : App.count.finished;
 		}
 
 		document.getElementById('status').innerHTML = "Set: " + App.count.finished + "/" + App.count.started;
@@ -269,11 +260,14 @@ var App = {
 				data += chunk;
 			});
 
-			res.on("end", function() {
+			res.on("end", function(res) {
 				callback(data, passon);
 			});
 
-		}).on("error", function() {
+		}).on("error", function(error) {
+			App.log("Error: Unable to get " + url, "#ff0000");
+			App.log(error, "#ff0000");
+			App.updateCount();
 			callback(null);
 		});
 	},
@@ -334,15 +328,41 @@ var App = {
 
 		return items;
 	},
-	writeFile:function(name, data){
-		var fs = require('fs');
-		fs.writeFileSync(name, data);
+	readSettings:function(){
+		var settings = App.readFile("riot_games_directory.ini");	
+
+		if (settings){
+			var path = settings.replace(/"/g, "") + "\\League of Legends\\Config\\Champions\\";
+
+			if (App.folderExists(path)){
+				App.leagueDirectory = path;
+			} else {
+				App.log("The path: " + path + " does not exist", "#ff0000");
+			}
+		}
+	},
+	writeFile:function(path, data){
+		try {
+			var fs = require('fs');
+			fs.writeFileSync(path, data);
+		} catch (e){
+			console.log("Error writing file [" + path + "]");
+		}
+	},
+	readFile:function(path){
+		try {
+			var fs = require('fs');
+			return fs.readFileSync(path, 'utf8');
+		} catch (e){
+			console.log("Error reading file [" + path + "]");
+		}
 	},
 	folderExists:function(path){
 		var fs = require('fs');
 		try {
 			var stats = fs.lstatSync(path);
-			if (stats.isFolder()) {
+			console.log(stats)
+			if (stats.isDirectory()) {
 				return true;
 			}
 		} catch (e){
@@ -351,7 +371,7 @@ var App = {
 	},
 	mkdir:function(path, root){
 		var fs = require('fs');
-		var dirs = path.split('/'), dir = dirs.shift(), root = (root||'')+dir+'/';
+		var dirs = path.split('/'), dir = dirs.shift(), root = (root || '') + dir + '/';
 
 		try { fs.mkdirSync(root); }
 		catch (e) {
@@ -376,6 +396,21 @@ var App = {
 		
 		var date = day + " " + months[month] + " " + year;
 		return 	date;
+	},
+	toggleConfig:function(){
+		var ele = document.getElementById('ui2');
+		ele.style.display = (ele.style.display == "block") ? "none" : "block";
+	},
+	setConfig:function(){
+		var restored = App.readFile("riot_games_directory.ini") || "";
+		var data = prompt("Path to Riot Games folder (usually C:\\Riot Games)", restored);
+		var path = data.replace(/"/g, "");
+
+		if (App.folderExists(path)){
+			App.writeFile("riot_games_directory.ini", path);
+		} else {
+			alert("The path: " + path + " does not exist");
+		}
 	}
 };
 
@@ -388,7 +423,7 @@ var App = {
 		<b>Include</b>
 		<table>
 			<tr>
-				<td>frequent builds</td><td> <input id="frequent" type="checkbox" class="form-control" checked></td>
+				<td>frequent builds</td><td> <input id="frequent" type="checkbox" class="form-control"></td>
 			</tr>
 			<tr>
 				<td>high win% builds</td><td> <input id="winrate" type="checkbox" class="form-control" checked></td>
@@ -404,9 +439,24 @@ var App = {
 			</tr>
 		</table>
 
-		<input type="button" value="Download" onclick="App.ini();">
+		<input type="button" value="Download" onclick="App.ini();"> 
+		<input type="button" value="Config" onclick="App.toggleConfig();">
 		<br><br>
 	</center>
+</div>
+
+<div id="ui2" style="font-size:11px;display:none;">
+		<br><br><b>Configuration</b>
+		<br>1. Find your riot games folder (usually C:\Riot Games)
+		<br>2. Hold shift and right click on the Riot Games folder
+		<br>3. Click "Copy as Path"
+		<br>4. Click <a href="javascript:App.setConfig()">here</a> and paste the path you just copied
+		<br><br>
+		Now when you download the item sets they will automatically be saved into the league client.
+		<br><br>
+		<b>I can't get config to work!</b><br> Don't worry, you can still copy and paste the item sets in to your league directory yourself. Below is where you save the files manually once you find your install directory.
+		<br><br><b>Where to manually save item sets</b>
+		<br>\Riot Games\League of Legends\Config\Champions\
 </div>
 
 
