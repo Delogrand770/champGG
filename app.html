@@ -411,6 +411,9 @@ var App = {
 		} else {
 			alert("The path: " + path + " does not exist");
 		}
+	},
+	openURL:function(url){
+		window.open(url);
 	}
 };
 
@@ -464,8 +467,8 @@ var App = {
 <span style="font-size:10px;color:#c0c0c0;" id="status"></span><br>
 <span style="font-size:10px;color:#c0c0c0;" id="credits">
 <center>
-Original PHP script by ebildude123 <a href="https://github.com/ebildude123/champion.gg-item-set-creator">Github</a><br>
-Item Data provided by <a href="champion.gg">http://champion.gg/</a><br>
+Original PHP script by ebildude123 <a href="javascript:App.openURL('https://github.com/ebildude123/champion.gg-item-set-creator')">Github</a><br>
+Item Data provided by <a href="javascript:App.openURL('http://champion.gg')">http://champion.gg/</a><br>
 Ported by Gavin Delphia
 </center>
 </span>
