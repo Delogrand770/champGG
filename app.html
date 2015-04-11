@@ -28,6 +28,7 @@ var App = {
 	//Experimental feature to save the files to the league directory rather than the ItemSets directory
 	leagueDirectory: "", 
 	count: {started: 0, finished: 0},
+	patch: "",
 	ini:function(){
 		document.getElementById('ui2').style.display = "none";
 		App.readSettings();
@@ -52,11 +53,12 @@ var App = {
 			App.log("Creating item sets for all champions...", "#c0c0c0");
 			var saveFolder = "ItemSets/" + App.betterDate() + " - ";
 			var list = data.match(/<a href="([^"]*)" style="display:block">/g);
-
+			App.patch = App.getBetween(data, "<small>Patch <strong>", "</strong>");
+			App.log("Champion.gg item set data is for patch " + App.patch + "<br>", "#c0c0c0");
 			if (App.leagueDirectory){
 				saveFolder = App.leagueDirectory;
 				App.log("Auto Save Feature Enabled", "#0000ee");
-				App.log(saveFolder, "#0000ee");
+				App.log(saveFolder + "<br>", "#0000ee");
 			}
 
 			for (var champPage in list){
@@ -217,7 +219,7 @@ var App = {
 			App.count.finished = (App.count.finished >= App.count.started) ? App.count.started : App.count.finished;
 		}
 
-		document.getElementById('status').innerHTML = "Set: " + App.count.finished + "/" + App.count.started;
+		document.getElementById('status').innerHTML = "Patch: " + App.patch + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Set: " + App.count.finished + "/" + App.count.started;
 	},
 	getSkillData:function(arr){
 		var decode = ["Q", "W", "E"];
@@ -466,7 +468,7 @@ var App = {
 <div id="output" style="height:510px;width:100%;overflow-y:scroll;font-size:10px;color:#c0c0c0;display:none;"></div>
 <span style="font-size:10px;color:#c0c0c0;" id="status"></span><br>
 <span style="font-size:10px;color:#c0c0c0;" id="credits">
-<center>
+<center><br>
 Original PHP script by ebildude123 <a href="javascript:App.openURL('https://github.com/ebildude123/champion.gg-item-set-creator')">Github</a><br>
 Item Data provided by <a href="javascript:App.openURL('http://champion.gg')">http://champion.gg/</a><br>
 Ported by Gavin Delphia
