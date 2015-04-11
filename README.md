@@ -8,7 +8,7 @@ Most Frequent Builds, Highest Win% Builds, Starter Items, Consumables and Skill 
 
 # Setup
 
-1. Click the Download button on the right
+1. Click the Download ZIP button on the right
 2. Extract the files from the zip archive
 3. Run champGG.exe
 
