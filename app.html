@@ -29,6 +29,8 @@ var App = {
 	leagueDirectory: "", 
 	count: {started: 0, finished: 0},
 	patch: "",
+	sync: false,
+	queue: [],
 	ini:function(){
 		document.getElementById('ui2').style.display = "none";
 		App.readSettings();
@@ -45,7 +47,11 @@ var App = {
 		document.getElementById("output").style.display = "block";
 	},
 	getAllSets:function(){
-		App.getPage("http://champion.gg/", function(data){App.getAllSetsCB(data)});
+		if (App.sync){
+			App.getPage("http://champion.gg/", function(data){App.getAllSetsSyncCB(data)});
+		} else {
+			App.getPage("http://champion.gg/", function(data){App.getAllSetsCB(data)});
+		}
 	},
 	getAllSetsCB:function(data){
 		if (data){
@@ -73,6 +79,43 @@ var App = {
 			}
 		} else {
 			//console.log("Error");
+		}
+	},
+	getAllSetsSyncCB:function(data){
+		if (data){
+			App.log("Creating item sets for all champions...", "#c0c0c0");
+			var saveFolder = "ItemSets/" + App.betterDate() + " - ";
+			var list = data.match(/<a href="([^"]*)" style="display:block">/g);
+			App.patch = App.getBetween(data, "<small>Patch <strong>", "</strong>");
+			App.log("Champion.gg item set data is for patch " + App.patch + "<br>", "#c0c0c0");
+
+			if (App.leagueDirectory){
+				saveFolder = App.leagueDirectory;
+				App.log("Auto Save Feature Enabled", "#0000ee");
+				App.log(saveFolder + "<br>", "#0000ee");
+			}
+
+			for (var champPage in list){
+				App.updateCount(true);
+				var data = list[champPage].split("/");
+				var champ = data[2];
+				var role = data[3].split('"')[0];
+				var url = "http://champion.gg/champion/" + champ + "/" + role;
+
+				var passon = {champ:champ, role:role, saveFolder: saveFolder};
+
+				App.queue.push({passon: passon, url: url});
+			}
+
+			App.getAllSetsSync_Next();
+		} else {
+			//console.log("Error");
+		}	
+	},
+	getAllSetsSync_Next:function(){
+		if (App.queue.length > 0){
+			var obj = App.queue.shift();
+			App.getPage(obj.url, function(data, passon){App.getOneSetCB(data, passon)}, obj.passon);
 		}
 	},
 	getOneSet:function(champ, role){
@@ -217,6 +260,11 @@ var App = {
 		} else {
 			App.count.finished++;
 			App.count.finished = (App.count.finished >= App.count.started) ? App.count.started : App.count.finished;
+
+			if (App.sync){
+				App.getAllSetsSync_Next();
+			}
+
 		}
 
 		document.getElementById('status').innerHTML = "Patch: " + App.patch + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Set: " + App.count.finished + "/" + App.count.started;
@@ -280,10 +328,6 @@ var App = {
 			return result[0];
 		}
 		return '';
-	},
-	isInArray:function(arr, key){
-		for (item in arr){
-		}
 	},
 	getItems:function(input, fromPreset, starters) {
 		var fromPreset = fromPreset || false;
@@ -363,7 +407,7 @@ var App = {
 		var fs = require('fs');
 		try {
 			var stats = fs.lstatSync(path);
-			console.log(stats)
+			//console.log(stats)
 			if (stats.isDirectory()) {
 				return true;
 			}
@@ -403,7 +447,14 @@ var App = {
 		var ele = document.getElementById('ui2');
 		ele.style.display = (ele.style.display == "block") ? "none" : "block";
 	},
-	setConfig:function(){
+	setConfig:function(data){
+		if (data == "dwn"){
+			App.sync = true;
+			alert('Queue mode enabled. The app will now make requests to champion.gg one at a time.');
+			return;
+		}
+
+
 		var restored = App.readFile("riot_games_directory.ini") || "";
 		var data = prompt("Path to Riot Games folder (usually C:\\Riot Games)", restored);
 		var path = data.replace(/"/g, "");
@@ -462,6 +513,9 @@ var App = {
 		<b>I can't get config to work!</b><br> Don't worry, you can still copy and paste the item sets in to your league directory yourself. Below is where you save the files manually once you find your install directory.
 		<br><br><b>Where to manually save item sets</b>
 		<br>\Riot Games\League of Legends\Config\Champions\
+		<br><br>
+		<b>Connection Errors?</b>
+		<br>Click <a href="javascript:App.setConfig('dwn')">here</a>
 </div>
 
 
