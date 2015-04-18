@@ -274,10 +274,7 @@ var App = {
 			fulllist.push(decode[arr[skill] - 1]);
 		}
 
-
-		var data = "Start " + fulllist.join("").slice(0, App.startSkillsNum) + " | Max " + decoded.join(">");
-		console.log(data)
-
+		var data = fulllist.join("").slice(0, App.startSkillsNum) + " | Max " + decoded.join(">");
 
 		if (App.isChecked("skills")){
 			return ", " + data;
