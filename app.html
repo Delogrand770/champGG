@@ -30,7 +30,7 @@ var App = {
 	count: {started: 0, finished: 0},
 	patch: "",
 	sync: false,
-	startSkillsNum: 4, //How many skills to show to start
+	startSkillsNum: 5, //How many skills to show to start
 	queue: [],
 	ini:function(){
 		document.getElementById('ui2').style.display = "none";
@@ -92,6 +92,7 @@ var App = {
 			}
 
 		} else {
+			App.log("Error: No data returned from champion.gg", "#ff0000");
 			//console.log("Error");
 		}
 	},
@@ -148,21 +149,27 @@ var App = {
 
 		var firstMGBlock = {
 			"items": App.array_merge(App.getItems(firstMG, false, true), App.getItems(trinketItems, true)),
-			"type": "Most Frequent Starters (" + firstMG["winPercent"] + "% win in " + firstMG["games"] + " games)"
+			"type": "Frequent Starters (" + firstMG["winPercent"].toString().slice(0, 2) + "% win/" + firstMG["games"] + " games)"
 		};
 
 		var firstHWPBlock = {
 			"items": App.array_merge(App.getItems(firstHWP, false, true), App.getItems(trinketItems, true)),
-			"type": "Highest Win Rate Starters (" + firstHWP["winPercent"] + "% win in " + firstHWP["games"] + " games)"
+			"type": "Highest Win Rate Starters (" + firstHWP["winPercent"].toString().slice(0, 2) + "% win/" + firstHWP["games"] + " games)"
 		};
 		var fullMGBlock = {
 			"items": App.getItems(fullMG),
-			"type": "Most Freq" + App.getSkillData(skillsMG) + " (" + fullMG["winPercent"] + "% win in " + fullMG["games"] + " games)"
+			"type": "Frequent:" + App.getSkillData(skillsMG) + " (" + fullMG["winPercent"].toString().slice(0, 2) + "% win/" + fullMG["games"] + " games)"
 		};
 		var fullHWPBlock = {
 			"items": App.getItems(fullHWP),
-			"type": "Highest Win" + App.getSkillData(skillsHWP) + " (" + fullHWP["winPercent"] + "% win in " + fullHWP["games"] + " games)"
+			"type": "High Win:" + App.getSkillData(skillsHWP) + " (" + fullHWP["winPercent"].toString().slice(0, 2) + "% win/" + fullHWP["games"] + " games)"
 		};
+
+		//If the string length is too long the getSkillData method adds length
+		// if (fullHWPBlock.type.length > 50 || fullMGBlock.type.length > 50){
+		// 	console.log(fullHWPBlock.type.length, fullMGBlock.type.length);
+		// }
+
 		var consumeBlock = {
 			"items": App.getItems(consumeItems, true),
 			"type": "Consumables"
@@ -274,10 +281,10 @@ var App = {
 			fulllist.push(decode[arr[skill] - 1]);
 		}
 
-		var data = fulllist.join("").slice(0, App.startSkillsNum) + " | Max " + decoded.join(">");
+		var data = "" + fulllist.join("").slice(0, App.startSkillsNum) + " | " + decoded.join(">");
 
 		if (App.isChecked("skills")){
-			return ", " + data;
+			return " " + data;
 		} else {
 			return "";
 		}
@@ -323,6 +330,7 @@ var App = {
 		var fromPreset = fromPreset || false;
 		var starters = starters || false;
 		var items = [];
+
 		if (fromPreset) {
 			for (item in input) {
 				items.push({
@@ -438,13 +446,13 @@ var App = {
 		ele.style.display = (ele.style.display == "block") ? "none" : "block";
 	},
 	setConfig:function(data){
-		if (data == "dwn"){
+		if (data == "connection"){
 			App.sync = !App.sync;
 
 			if (App.sync){
 				alert('Queue mode enabled.\nThe app will now make requests to champion.gg one at a time.');
 			} else {
-				alert('Queue mode disabled.\nThe app will now make requests to champion.gg all at once');
+				alert('Queue mode disabled.\nThe app will now make requests to champion.gg all at once.');
 			}
 			return;
 		}
@@ -509,7 +517,7 @@ var App = {
 		<br>\Riot Games\League of Legends\Config\Champions\
 		<br><br>
 		<b>Connection Errors?</b>
-		<br>Click <a href="javascript:App.setConfig('dwn')">here</a>
+		<br>Click <a href="javascript:App.setConfig('connection')">here</a>
 </div>
 
 
