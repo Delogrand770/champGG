@@ -6,7 +6,7 @@ Ported by Gavin Delphia in 2015
 <html lang="en">
 
 <head>
-<title>ChampGG ItemSet Downloader</title>
+<title>champGG itemSet utility</title>
 
 <style>
 html {
@@ -25,7 +25,16 @@ div {
 
 <script>
 var App = {
+	//Experimental feature to save the files to the league directory rather than the ItemSets directory
+	leagueDirectory: "", 
+	count: {started: 0, finished: 0},
+	patch: "",
+	sync: false,
+	startSkillsNum: 5, //How many skills to show to start
+	queue: [],
 	ini:function(){
+		document.getElementById('ui2').style.display = "none";
+		App.readSettings();
 		App.getAllSets();
 		// App.getOneSet("Fizz", "Top");
 		// App.getOneSet("Fizz", "Middle");
@@ -44,27 +53,63 @@ var App = {
 	getAllSetsCB:function(data){
 		if (data){
 			//console.log("Creating item sets for all champions...");
+
+			if (App.sync){
+				App.log("Single Request mode enabled", "#0000ee");
+			}
+
 			App.log("Creating item sets for all champions...", "#c0c0c0");
 			var saveFolder = "ItemSets/" + App.betterDate() + " - ";
 			var list = data.match(/<a href="([^"]*)" style="display:block">/g);
+			App.patch = App.getBetween(data, "<small>Patch <strong>", "</strong>");
+			App.log("Champion.gg item set data is for patch " + App.patch + "<br>", "#c0c0c0");
+			App.queue = [];
+
+			if (App.leagueDirectory){
+				saveFolder = App.leagueDirectory;
+				App.log("Auto Save Feature Enabled", "#0000ee");
+				App.log(saveFolder + "<br>", "#0000ee");
+			}
 
 			for (var champPage in list){
+				App.updateCount(true);
 				var data = list[champPage].split("/");
 				var champ = data[2];
 				var role = data[3].split('"')[0];
 				var url = "http://champion.gg/champion/" + champ + "/" + role;
 
 				var passon = {champ:champ, role:role, saveFolder: saveFolder};
-				App.getPage(url, function(data, passon){App.getOneSetCB(data, passon)}, passon);
+
+				if (App.sync){
+					App.queue.push({passon: passon, url: url});
+				} else {
+					App.getPage(url, function(data, passon){App.getOneSetCB(data, passon)}, passon);
+				}
 			}
+
+			if (App.sync){
+				App.getAllSetsSync_Next();
+			}
+
 		} else {
+			App.log("Error: No data returned from champion.gg", "#ff0000");
 			//console.log("Error");
+		}
+	},
+	getAllSetsSync_Next:function(){
+		if (App.queue.length > 0){
+			var obj = App.queue.shift();
+			App.getPage(obj.url, function(data, passon){App.getOneSetCB(data, passon)}, obj.passon);
 		}
 	},
 	getOneSet:function(champ, role){
 		var saveFolder = "ItemSets/" + App.betterDate() + " - SINGLES - ";
-		var url = "http://champion.gg/champion/" + champ + "/" + role;
 
+		if (App.leagueDirectory){
+			saveFolder = App.leagueDirectory;
+		}
+
+		var url = "http://champion.gg/champion/" + champ + "/" + role;
 		var passon = {champ:champ, role:role, saveFolder: saveFolder};
 		App.getPage(url, function(data, passon){App.getOneSetCB(data, passon)}, passon);
 	},
@@ -83,6 +128,7 @@ var App = {
 			App.log("No data is available for " + champ + " in " + role + " role", "#cc0000");
 			return;
 		}
+		
 		var currentPatch = App.getBetween(page, "<small>Patch <strong>", "</strong>");
 		var firstMG = champJSON["firstItems"]["mostGames"];
 		var firstHWP = champJSON["firstItems"]["highestWinPercent"];
@@ -93,6 +139,7 @@ var App = {
 
 		if (!firstMG["games"] || !firstHWP["games"] || !fullMG["games"] || !fullHWP["games"]){
 			App.log("Full data is unavailable for " + champ + " in " + role + " role", "#cc0000");
+			App.updateCount();
 			//console.log("Woops, full data is unavailable for " + champ + " in " + role + " role");
 			return;
 		}
@@ -101,29 +148,35 @@ var App = {
 		var trinketItems = [3340, 3341, 3342];
 
 		var firstMGBlock = {
-			"items": App.array_merge(App.getItems(firstMG), App.getItems(trinketItems, true)),
-			"type": "Most Frequent Starters (" + firstMG["winPercent"] + "% wins over " + firstMG["games"] + " games)"
+			"items": App.array_merge(App.getItems(firstMG, false, true), App.getItems(trinketItems, true)),
+			"type": "Frequent Starters (" + firstMG["winPercent"].toString().slice(0, 2) + "% win/" + firstMG["games"] + " games)"
 		};
 
 		var firstHWPBlock = {
-			"items": App.array_merge(App.getItems(firstHWP), App.getItems(trinketItems, true)),
-			"type": "Highest Win Rate Starters (" + firstHWP["winPercent"] + "% wins over " + firstHWP["games"] + " games)"
+			"items": App.array_merge(App.getItems(firstHWP, false, true), App.getItems(trinketItems, true)),
+			"type": "Highest Win Rate Starters (" + firstHWP["winPercent"].toString().slice(0, 2) + "% win/" + firstHWP["games"] + " games)"
 		};
 		var fullMGBlock = {
 			"items": App.getItems(fullMG),
-			"type": "Most Freq Build" + App.getSkillData(skillsMG) + " (" + fullMG["winPercent"] + "% wins over " + fullMG["games"] + " games)"
+			"type": "Frequent:" + App.getSkillData(skillsMG) + " (" + fullMG["winPercent"].toString().slice(0, 2) + "% win/" + fullMG["games"] + " games)"
 		};
 		var fullHWPBlock = {
 			"items": App.getItems(fullHWP),
-			"type": "Highest Win Build" + App.getSkillData(skillsHWP) + " (" + fullHWP["winPercent"] + "% wins over " + fullHWP["games"] + " games)"
+			"type": "High Win:" + App.getSkillData(skillsHWP) + " (" + fullHWP["winPercent"].toString().slice(0, 2) + "% win/" + fullHWP["games"] + " games)"
 		};
+
+		//If the string length is too long the getSkillData method adds length
+		// if (fullHWPBlock.type.length > 50 || fullMGBlock.type.length > 50){
+		// 	console.log(fullHWPBlock.type.length, fullMGBlock.type.length);
+		// }
+
 		var consumeBlock = {
 			"items": App.getItems(consumeItems, true),
 			"type": "Consumables"
 		};
 
-		//console.log(fullHWP);
-		//console.log(fullHWPBlock);
+		// console.log(firstHWP);
+		// console.log(firstMG);
 
 		var roleFormatted = champJSON["role"].substring(0, 1) + champJSON["role"].toLowerCase().substring(1);
 
@@ -165,7 +218,10 @@ var App = {
 			"champion": champJSON["key"]
 		};
 
-		saveFolder += "PATCH " + currentPatch.replace('.','_');
+
+		if (!App.leagueDirectory){
+			saveFolder += "PATCH " + currentPatch.replace('.','_');
+		}
 
 		if (saveFolder == null) {
 			saveFolder = champJSON["key"] + "/Recommended";
@@ -183,11 +239,28 @@ var App = {
 		var itemSetJSON = JSON.stringify(itemSetArr, null, '\t');
 		App.writeFile(fileName, itemSetJSON);
 
+		App.updateCount();
 		App.log("Saved set for " + champ + " in " + role + " role", "#00cc00");
 		//console.log("Saved set for " + champ + " in " + role + " role to: " + fileName);
 	},
+	updateCount:function(starting){
+		starting = starting || false;
+		if (starting){
+			App.count.started++;
+		} else {
+			App.count.finished++;
+			App.count.finished = (App.count.finished >= App.count.started) ? App.count.started : App.count.finished;
+
+			if (App.sync){
+				App.getAllSetsSync_Next();
+			}
+
+		}
+
+		document.getElementById('status').innerHTML = "Patch: " + App.patch + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Set: " + App.count.finished + "/" + App.count.started;
+	},
 	getSkillData:function(arr){
-		var decode = ["Q", "W", "E"];
+		var decode = ["Q", "W", "E", "R"];
 		var totals = [0, 0, 0, 0];
 		var results = [];
 		for (skill in arr) {
@@ -203,8 +276,15 @@ var App = {
 			decoded.push(decode[results[skill]]);
 		}
 
+		var fulllist = [];
+		for (skill in arr){
+			fulllist.push(decode[arr[skill] - 1]);
+		}
+
+		var data = "" + fulllist.join("").slice(0, App.startSkillsNum) + " | " + decoded.join(">");
+
 		if (App.isChecked("skills")){
-			return ", Skill: " + decoded.join(">");
+			return " " + data;
 		} else {
 			return "";
 		}
@@ -227,11 +307,14 @@ var App = {
 				data += chunk;
 			});
 
-			res.on("end", function() {
+			res.on("end", function(res) {
 				callback(data, passon);
 			});
 
-		}).on("error", function() {
+		}).on("error", function(error) {
+			App.log("Error: Unable to get " + url, "#ff0000");
+			App.log(error, "#ff0000");
+			App.updateCount();
 			callback(null);
 		});
 	},
@@ -243,9 +326,11 @@ var App = {
 		}
 		return '';
 	},
-	getItems:function(input, fromPreset) {
+	getItems:function(input, fromPreset, starters) {
 		var fromPreset = fromPreset || false;
+		var starters = starters || false;
 		var items = [];
+
 		if (fromPreset) {
 			for (item in input) {
 				items.push({
@@ -254,41 +339,74 @@ var App = {
 				});
 			}
 		} else {
-			//var itemIDs = {};
+			var itemIDs = {};
+
 			for (item in input["items"]) {
 				var id = input["items"][item]["id"];
-				id = (id == 2010) ? 2003 : id;
-
-				// if (itemIDs[id]){
-				// 	itemIDs[id]++;
-				// } else {
-				// 	itemIDs[id] = 1;
-				// }
-				items.push({
-					"count": 1,
-					"id": id + ""
-				});
+				id = (id == 2010) ? 2003 : id; //Convert total biscuit to health pot. If they have the mastery the pots will be biscuits.
+				
+				if (starters){
+					if (itemIDs[id]){
+						itemIDs[id]++;
+					} else {
+						itemIDs[id] = 1;
+					}
+				} else {
+					items.push({
+						"count": 1,
+						"id": id + ""
+					});
+				}
 			}
 
-			// var count = 0;
-			// for (itemID in itemIDs) {
-			// 	items.push({
-			// 		"count": itemIDs[itemID],
-			// 		"id": itemID + ""
-			// 	});
-			// }
+			if (starters){
+				var count = 0;
+				for (itemID in itemIDs) {
+					items.push({
+						"count": itemIDs[itemID],
+						"id": itemID + ""
+					});
+				}
+			}
 		}
+
 		return items;
 	},
-	writeFile:function(name, data){
-		var fs = require('fs');
-		fs.writeFileSync(name, data);
+	readSettings:function(){
+		var settings = App.readFile("riot_games_directory.ini");	
+
+		if (settings){
+			var path = settings.replace(/"/g, "") + "\\League of Legends\\Config\\Champions\\";
+
+			if (App.folderExists(path)){
+				App.leagueDirectory = path;
+			} else {
+				App.log("The path: " + path + " does not exist. Saving in champGG directory instead.", "#ff0000");
+			}
+		}
+	},
+	writeFile:function(path, data){
+		try {
+			var fs = require('fs');
+			fs.writeFileSync(path, data);
+		} catch (e){
+			console.log("Error writing file [" + path + "]");
+		}
+	},
+	readFile:function(path){
+		try {
+			var fs = require('fs');
+			return fs.readFileSync(path, 'utf8');
+		} catch (e){
+			console.log("Error reading file [" + path + "]");
+		}
 	},
 	folderExists:function(path){
 		var fs = require('fs');
 		try {
 			var stats = fs.lstatSync(path);
-			if (stats.isFolder()) {
+			//console.log(stats)
+			if (stats.isDirectory()) {
 				return true;
 			}
 		} catch (e){
@@ -297,7 +415,7 @@ var App = {
 	},
 	mkdir:function(path, root){
 		var fs = require('fs');
-		var dirs = path.split('/'), dir = dirs.shift(), root = (root||'')+dir+'/';
+		var dirs = path.split('/'), dir = dirs.shift(), root = (root || '') + dir + '/';
 
 		try { fs.mkdirSync(root); }
 		catch (e) {
@@ -319,9 +437,38 @@ var App = {
 		var month = today.getMonth();
 		var day = today.getDate();
 		day = (day < 10) ? "0" + day : day;
-
+		
 		var date = day + " " + months[month] + " " + year;
 		return 	date;
+	},
+	toggleConfig:function(){
+		var ele = document.getElementById('ui2');
+		ele.style.display = (ele.style.display == "block") ? "none" : "block";
+	},
+	setConfig:function(data){
+		if (data == "connection"){
+			App.sync = !App.sync;
+
+			if (App.sync){
+				alert('Queue mode enabled.\nThe app will now make requests to champion.gg one at a time.');
+			} else {
+				alert('Queue mode disabled.\nThe app will now make requests to champion.gg all at once.');
+			}
+			return;
+		}
+
+		var restored = App.readFile("riot_games_directory.ini") || "";
+		var data = prompt("Path to Riot Games folder (usually C:\\Riot Games)", restored);
+		var path = data.replace(/"/g, "");
+
+		if (App.folderExists(path)){
+			App.writeFile("riot_games_directory.ini", path);
+		} else {
+			alert("The path: " + path + " does not exist");
+		}
+	},
+	openURL:function(url){
+		window.open(url);
 	}
 };
 
@@ -334,7 +481,7 @@ var App = {
 		<b>Include</b>
 		<table>
 			<tr>
-				<td>frequent builds</td><td> <input id="frequent" type="checkbox" class="form-control" checked></td>
+				<td>frequent builds</td><td> <input id="frequent" type="checkbox" class="form-control"></td>
 			</tr>
 			<tr>
 				<td>high win% builds</td><td> <input id="winrate" type="checkbox" class="form-control" checked></td>
@@ -350,18 +497,36 @@ var App = {
 			</tr>
 		</table>
 
-		<input type="button" value="Download" onclick="App.ini();">
+		<input type="button" value="Download" onclick="App.ini();"> 
+		<input type="button" value="Config" onclick="App.toggleConfig();">
 		<br><br>
 	</center>
 </div>
 
+<div id="ui2" style="font-size:11px;display:none;">
+		<br><br><b>Configuration</b>
+		<br>1. Find your riot games folder (usually C:\Riot Games)
+		<br>2. Hold shift and right click on the Riot Games folder
+		<br>3. Click "Copy as Path"
+		<br>4. Click <a href="javascript:App.setConfig()">here</a> and paste the path you just copied
+		<br><br>
+		Now when you download the item sets they will automatically be saved into the league client.
+		<br><br>
+		<b>I can't get config to work!</b><br> Don't worry, you can still copy and paste the item sets in to your league directory yourself. Below is where you save the files manually once you find your install directory.
+		<br><br><b>Where to manually save item sets</b>
+		<br>\Riot Games\League of Legends\Config\Champions\
+		<br><br>
+		<b>Connection Errors?</b>
+		<br>Click <a href="javascript:App.setConfig('connection')">here</a>
+</div>
+
 
 <div id="output" style="height:510px;width:100%;overflow-y:scroll;font-size:10px;color:#c0c0c0;display:none;"></div>
-<br>
+<span style="font-size:10px;color:#c0c0c0;" id="status"></span><br>
 <span style="font-size:10px;color:#c0c0c0;" id="credits">
-<center>
-Original PHP script by ebildude123 <a href="https://github.com/ebildude123/champion.gg-item-set-creator">Github</a><br>
-Item Data provided by <a href="champion.gg">http://champion.gg/</a><br>
+<center><br>
+Original PHP script by ebildude123 <a href="javascript:App.openURL('https://github.com/ebildude123/champion.gg-item-set-creator')">Github</a><br>
+Item Data provided by <a href="javascript:App.openURL('http://champion.gg')">http://champion.gg/</a><br>
 Ported by Gavin Delphia
 </center>
 </span>
