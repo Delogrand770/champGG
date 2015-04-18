@@ -148,20 +148,20 @@ var App = {
 
 		var firstMGBlock = {
 			"items": App.array_merge(App.getItems(firstMG, false, true), App.getItems(trinketItems, true)),
-			"type": "Most Frequent Starters (" + firstMG["winPercent"] + "% wins over " + firstMG["games"] + " games)"
+			"type": "Most Frequent Starters (" + firstMG["winPercent"] + "% win in " + firstMG["games"] + " games)"
 		};
 
 		var firstHWPBlock = {
 			"items": App.array_merge(App.getItems(firstHWP, false, true), App.getItems(trinketItems, true)),
-			"type": "Highest Win Rate Starters (" + firstHWP["winPercent"] + "% wins over " + firstHWP["games"] + " games)"
+			"type": "Highest Win Rate Starters (" + firstHWP["winPercent"] + "% win in " + firstHWP["games"] + " games)"
 		};
 		var fullMGBlock = {
 			"items": App.getItems(fullMG),
-			"type": "Most Freq Build" + App.getSkillData(skillsMG) + " (" + fullMG["winPercent"] + "% wins over " + fullMG["games"] + " games)"
+			"type": "Most Freq" + App.getSkillData(skillsMG) + " (" + fullMG["winPercent"] + "% win in " + fullMG["games"] + " games)"
 		};
 		var fullHWPBlock = {
 			"items": App.getItems(fullHWP),
-			"type": "Highest Win Build" + App.getSkillData(skillsHWP) + " (" + fullHWP["winPercent"] + "% wins over " + fullHWP["games"] + " games)"
+			"type": "Highest Win" + App.getSkillData(skillsHWP) + " (" + fullHWP["winPercent"] + "% win in " + fullHWP["games"] + " games)"
 		};
 		var consumeBlock = {
 			"items": App.getItems(consumeItems, true),
