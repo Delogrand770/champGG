@@ -4,7 +4,6 @@ Creates custom item sets for every champion in their most popular roles using da
 The data used to create these item sets is from Platinum+ players which means you will have great builds for all champs!
 
 Features include:
-
 * Most popular builds
 * Highest win rate builds
 * Most popular starting items
