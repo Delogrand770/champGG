@@ -8,6 +8,7 @@ Ported by Gavin Delphia in 2015
 <head>
 <title>champGG itemSet utility</title>
 
+    <link href="bootstrap.min.css" rel="stylesheet">
 <style>
 html {
   font-family: sans-serif;
@@ -19,6 +20,9 @@ body{
 }
 div {
 	border: 0px solid;
+}
+td{
+	cursor: help;
 }
 </style>
 
@@ -35,6 +39,13 @@ var App = {
 	ini:function(){
 		document.getElementById('ui2').style.display = "none";
 		App.readSettings();
+
+		//Remove old patch settings. Does not effect any custom sets made in the league client
+		if (App.isChecked('remold')){	
+			App.rmdir(App.leagueDirectory);
+			App.mkdir(App.leagueDirectory);
+		}
+
 		App.getAllSets();
 		// App.getOneSet("Fizz", "Top");
 		// App.getOneSet("Fizz", "Middle");
@@ -46,6 +57,9 @@ var App = {
 
 		document.getElementById("ui").style.display = "none";
 		document.getElementById("output").style.display = "block";
+	},
+	clean:function(){
+		App.rmdir("locales");
 	},
 	getAllSets:function(){
 		App.getPage("http://champion.gg/", function(data){App.getAllSetsCB(data)});
@@ -383,6 +397,13 @@ var App = {
 			} else {
 				App.log("The path: " + path + " does not exist. Saving in champGG directory instead.", "#ff0000");
 			}
+		} else { //If we dont find a valid ini setting we try to auto set the default install directory
+			var usual_path = "C:\\Riot Games";
+
+			if (App.folderExists(usual_path)){
+				App.writeFile("riot_games_directory.ini", usual_path);
+				App.readSettings();
+			}
 		}
 	},
 	writeFile:function(path, data){
@@ -411,6 +432,20 @@ var App = {
 			}
 		} catch (e){
 			return false;
+		}
+	},
+	rmdir:function(path){
+		var fs = require('fs');
+		if (fs.existsSync(path)){
+			fs.readdirSync(path).forEach(function(file, index){
+				var curPath = path + "/" + file;
+				if (fs.lstatSync(curPath).isDirectory()){ //recurse
+					App.rmdir(curPath);
+				} else { // delete file
+					fs.unlinkSync(curPath);
+				}
+			});
+			fs.rmdirSync(path);
 		}
 	},
 	mkdir:function(path, root){
@@ -450,9 +485,9 @@ var App = {
 			App.sync = !App.sync;
 
 			if (App.sync){
-				alert('Queue mode enabled.\nThe app will now make requests to champion.gg one at a time.');
+				alert('Slow mode enabled.\nThe app will now make requests to champion.gg one at a time.');
 			} else {
-				alert('Queue mode disabled.\nThe app will now make requests to champion.gg all at once.');
+				alert('Fast mode enabled.\nThe app will now make requests to champion.gg all at once.');
 			}
 			return;
 		}
@@ -473,62 +508,73 @@ var App = {
 };
 
 </script>
-<body>
+<body onload="App.clean()">
 
 <div id="ui">
 	<center>
-		<br><br>
+		<br>
 		<b>Include</b>
 		<table>
 			<tr>
-				<td>frequent builds</td><td> <input id="frequent" type="checkbox" class="form-control"></td>
+				<td title="Include the most popular builds" style="width:150px;">frequent builds</td><td> <input id="frequent" type="checkbox" class="checkbox"></td>
 			</tr>
 			<tr>
-				<td>high win% builds</td><td> <input id="winrate" type="checkbox" class="form-control" checked></td>
+				<td title="Include builds with the highest win rate">high win% builds</td><td> <input id="winrate" type="checkbox" class="checkbox" checked></td>
 			</tr>
 			<tr>
-				<td>starter items</td><td> <input id="starters" type="checkbox" class="form-control" checked></td>
+				<td title="Include a set specific for starter items">starter items</td><td> <input id="starters" type="checkbox" class="checkbox" checked></td>
 			</tr>
 			<tr>
-				<td>consumables</td><td> <input id="consumables" type="checkbox" class="form-control" checked></td>
+				<td title="Include a generic consumable set for all champions">consumables</td><td> <input id="consumables" type="checkbox" class="checkbox" checked></td>
 			</tr>
 			<tr>
-				<td>skill order</td><td> <input id="skills" type="checkbox" class="form-control" checked></td>
+				<td title="Include first 5 skills to build and skill max order">skill order</td><td> <input id="skills" type="checkbox" class="checkbox" checked></td>
+			</tr>
+			<tr>
+				<td title="Remove old champion.gg item sets. Will not remove custom sets you have created">remove old sets</td><td> <input id="remold" type="checkbox" class="checkbox" checked></td>
 			</tr>
 		</table>
-
-		<input type="button" value="Download" onclick="App.ini();"> 
-		<input type="button" value="Config" onclick="App.toggleConfig();">
+		</table>
+		<br>
+		<input type="button" value="Download" onclick="App.ini();" class="btn btn-default"> 
+		<input type="button" value="Help" onclick="App.toggleConfig();" class="btn btn-default">
 		<br><br>
 	</center>
 </div>
 
-<div id="ui2" style="font-size:11px;display:none;">
-		<br><br><b>Configuration</b>
-		<br>1. Find your riot games folder (usually C:\Riot Games)
-		<br>2. Hold shift and right click on the Riot Games folder
-		<br>3. Click "Copy as Path"
-		<br>4. Click <a href="javascript:App.setConfig()">here</a> and paste the path you just copied
-		<br><br>
-		Now when you download the item sets they will automatically be saved into the league client.
-		<br><br>
-		<b>I can't get config to work!</b><br> Don't worry, you can still copy and paste the item sets in to your league directory yourself. Below is where you save the files manually once you find your install directory.
-		<br><br><b>Where to manually save item sets</b>
-		<br>\Riot Games\League of Legends\Config\Champions\
-		<br><br>
-		<b>Connection Errors?</b>
-		<br>Click <a href="javascript:App.setConfig('connection')">here</a>
+<div id="ui2" style="font-size:11px;display:none;">	
+	<b>Connection Errors?</b>
+	<br><i>Toggle between fast and slow download mode (Default fast)</i>
+	<br>1. Click <a href="javascript:App.setConfig('connection')">here</a>
+	<br><br>
+	<b>League Directory Setup</b>
+	<br><i>These steps are needed if LOL is not installed at C:\Riot Games</i>
+	<br>1. Find your riot games folder
+	<br>2. Hold shift and right click on the Riot Games folder
+	<br>3. Click "Copy as Path"
+	<br>4. Click <a href="javascript:App.setConfig()">here</a> and paste the path you just copied
+	<br>5. Item sets will now be auto saved into the LOL client
+	<br><br>
+	<b>I can't get League Directory Setup to work!</b>
+	<br> Don't worry, you can still copy and paste the item sets in to your league directory yourself. Below is where you copy the files to manually once you find your install directory.
+	<br><br><b>Where to manually save item sets?</b>
+	<br>\Riot Games\League of Legends\Config\Champions\
 </div>
 
 
-<div id="output" style="height:510px;width:100%;overflow-y:scroll;font-size:10px;color:#c0c0c0;display:none;"></div>
-<span style="font-size:10px;color:#c0c0c0;" id="status"></span><br>
+<div id="output" style="height:480px;width:100%;overflow-y:scroll;font-size:10px;color:#c0c0c0;display:none;" class="well"></div>
+
+<span style="font-size:10px;color:#c0c0c0;" id="status"></span>
+
 <span style="font-size:10px;color:#c0c0c0;" id="credits">
-<center><br>
-Original PHP script by ebildude123 <a href="javascript:App.openURL('https://github.com/ebildude123/champion.gg-item-set-creator')">Github</a><br>
-Item Data provided by <a href="javascript:App.openURL('http://champion.gg')">http://champion.gg/</a><br>
-Ported by Gavin Delphia
-</center>
+	<center>
+		<br>
+		Original PHP script by ebildude123 <a href="javascript:App.openURL('https://github.com/ebildude123/champion.gg-item-set-creator')">Github</a>
+		<br>
+		Item Data provided by <a href="javascript:App.openURL('http://champion.gg')">http://champion.gg/</a>
+		<br>
+		Ported by Gavin Delphia
+	</center>
 </span>
 
 </body>
