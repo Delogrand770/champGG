@@ -3,15 +3,15 @@ Downloads item sets from champion.gg to be used with a League of Legends client
 
 Features include:
 
-Most popular builds
-Highest win rate builds
-Most popular starting items
-Highest win rate starting items
-Consumables
-Skill order (First 5 to get and the order to max)
-Auto saving item sets into the League of Legends client
-Removing previous patch item sets (It doesn't touch sets you have made)
-Fast and slow download modes in the event your internet connection isn't the greatest
+* Most popular builds
+* Highest win rate builds
+* Most popular starting items
+* Highest win rate starting items
+* Consumables
+* Skill order (First 5 to get and the order to max)
+* Auto saving item sets into the League of Legends client
+* Removing previous patch item sets (It doesn't touch sets you have made)
+* Fast and slow download modes in the event your internet connection isn't the greatest
 
 # Setup
 
