@@ -1,7 +1,7 @@
 # champGG
 Creates custom item sets for every champion in their most popular roles using data from the site http://champion.gg
 
-Champion.gg analyzes millions of League of Legends Platinum+ games each patch to provide relevant champion builds, runes, masteries, stats, matchups and counters.
+The data used to create these item sets are from Plat+ players which means you will always know the builds pros are using
 
 Features include:
 
