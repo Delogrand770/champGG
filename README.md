@@ -1,7 +1,7 @@
 # champGG
 Creates custom item sets for every champion in their most popular roles using data from the site http://champion.gg
 
-The data used to create these item sets are from Plat+ players which means you will always know the builds pros are using
+The data used to create these item sets are from Plat+ players which means you will can build like the pros do
 
 Features include:
 
