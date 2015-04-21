@@ -12,7 +12,7 @@ Features include:
 * Consumables
 * Skill order (First 5 to get and the order to max)
 * Auto saving item sets into the League of Legends client
-* Removing previous patch item sets (It doesn't touch sets you have made)
+* Removing previous patch item sets (It doesn't touch item sets you have made)
 * Fast and slow download modes in the event your internet connection isn't the greatest
 
 # Setup
