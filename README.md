@@ -1,5 +1,5 @@
 # champGG
-Create custom item sets for every champion in their most popular roles using data from the site http://champion.gg
+Creates custom item sets for every champion in their most popular roles using data from the site http://champion.gg
 
 Champion.gg analyzes millions of League of Legends Platinum+ games each patch to provide relevant champion builds, runes, masteries, stats, matchups and counters.
 
