@@ -1,5 +1,5 @@
 # champGG
-Downloads item sets from champion.gg to be used with a League of Legends client
+This program will create custom item sets for every champion in their most popular roles using data from the site http://champion.gg
 
 Features include:
 
