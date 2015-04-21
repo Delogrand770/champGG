@@ -15,7 +15,7 @@ Features include:
 
 # Setup
 
-1. Grab the latest release: https://github.com/Gavin770/champGG/releases/latest
+1. Grab the latest relase of champGG.exe: https://github.com/Gavin770/champGG/releases/latest
 2. Run champGG.exe
 
 # Will Riot ban me?
