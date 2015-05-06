@@ -34,6 +34,8 @@ var App = {
 	count: {started: 0, finished: 0},
 	patch: "",
 	sync: false,
+	errorFlag: false,
+	errorMsg: "",
 	startSkillsNum: 5, //How many skills to show to start
 	queue: [],
 	ini:function(){
@@ -44,6 +46,10 @@ var App = {
 		if (App.isChecked('remold')){	
 			App.rmdir(App.leagueDirectory);
 			App.mkdir(App.leagueDirectory);
+
+			if (App.errorFlag){
+				App.log(App.errorMsg + "<br>", "red");
+			}
 		}
 
 		App.getAllSets();
@@ -390,7 +396,16 @@ var App = {
 		var settings = App.readFile("riot_games_directory.ini");	
 
 		if (settings){
-			var path = settings.replace(/"/g, "") + "\\League of Legends\\Config\\Champions\\";
+
+			var path = "";
+			var garena = settings.indexOf("GarenaLoL") > -1;
+
+			if (garena){
+				path = settings.replace(/"/g, "") + "\\GameData\\Apps\\LoL\\Game\\Config\\Champions\\";	
+			} else {
+				path = settings.replace(/"/g, "") + "\\League of Legends\\Config\\Champions\\";		
+			}
+
 
 			if (App.folderExists(path)){
 				App.leagueDirectory = path;
@@ -411,6 +426,14 @@ var App = {
 			var fs = require('fs');
 			fs.writeFileSync(path, data);
 		} catch (e){
+
+			if (e.message.indexOf("not permitted") > -1){
+				App.errorFlag = true;
+				App.errorMsg = "A permission error occured writing the item sets. Running the program as administrator may fix this.";
+				alert(App.errorMsg);
+				window.close();
+			}
+
 			console.log("Error writing file [" + path + "]");
 		}
 	},
@@ -435,17 +458,24 @@ var App = {
 		}
 	},
 	rmdir:function(path){
-		var fs = require('fs');
-		if (fs.existsSync(path)){
-			fs.readdirSync(path).forEach(function(file, index){
-				var curPath = path + "/" + file;
-				if (fs.lstatSync(curPath).isDirectory()){ //recurse
-					App.rmdir(curPath);
-				} else { // delete file
-					fs.unlinkSync(curPath);
-				}
-			});
-			fs.rmdirSync(path);
+		try{
+			var fs = require('fs');
+			if (fs.existsSync(path)){
+				fs.readdirSync(path).forEach(function(file, index){
+					var curPath = path + "/" + file;
+					if (fs.lstatSync(curPath).isDirectory()){ //recurse
+						App.rmdir(curPath);
+					} else { // delete file
+						fs.unlinkSync(curPath);
+					}
+				});
+				fs.rmdirSync(path);
+			}
+		} catch(e){
+			if (e.message.indexOf("not permitted") > -1){
+				App.errorFlag = true;
+				App.errorMsg = "A permission error occured removing the old item sets. Running the program as administrator may fix this.";
+			}
 		}
 	},
 	mkdir:function(path, root){
@@ -489,17 +519,16 @@ var App = {
 			} else {
 				alert('Fast mode enabled.\nThe app will now make requests to champion.gg all at once.');
 			}
-			return;
-		}
+		} else if (data == "leaguedir"){
+			var restored = App.readFile("riot_games_directory.ini") || "";
+			var data = prompt("Path to Riot Games or Garena folder \n(usually C:\\Riot Games or C:\\Program Files (x86)\\GarenaLoL)", restored);
+			var path = data.replace(/"/g, "");
 
-		var restored = App.readFile("riot_games_directory.ini") || "";
-		var data = prompt("Path to Riot Games folder (usually C:\\Riot Games)", restored);
-		var path = data.replace(/"/g, "");
-
-		if (App.folderExists(path)){
-			App.writeFile("riot_games_directory.ini", path);
-		} else {
-			alert("The path: " + path + " does not exist");
+			if (App.folderExists(path)){
+				App.writeFile("riot_games_directory.ini", path);
+			} else {
+				alert("The path: " + path + " does not exist");
+			}			
 		}
 	},
 	openURL:function(url){
@@ -548,17 +577,18 @@ var App = {
 	<br>1. Click <a href="javascript:App.setConfig('connection')">here</a>
 	<br><br>
 	<b>League Directory Setup</b>
-	<br><i>These steps are needed if LOL is not installed at C:\Riot Games</i>
-	<br>1. Find your riot games folder
-	<br>2. Hold shift and right click on the Riot Games folder
+	<br><i>These steps are needed if LOL is not installed at C:\Riot Games or if using Garena</i>
+	<br>1. Find your Riot Games or Garena folder
+	<br>2. Hold shift and right click on the folder
 	<br>3. Click "Copy as Path"
-	<br>4. Click <a href="javascript:App.setConfig()">here</a> and paste the path you just copied
+	<br>4. Click <a href="javascript:App.setConfig('leaguedir')">here</a> and paste the path you just copied
 	<br>5. Item sets will now be auto saved into the LOL client
 	<br><br>
 	<b>I can't get League Directory Setup to work!</b>
 	<br> Don't worry, you can still copy and paste the item sets in to your league directory yourself. Below is where you copy the files to manually once you find your install directory.
 	<br><br><b>Where to manually save item sets?</b>
 	<br>\Riot Games\League of Legends\Config\Champions\
+	<br>\GarenaLoL\GameData\Apps\LoL\Game\Config\Champions\
 </div>
 
 

@@ -9,10 +9,10 @@
     "toolbar": false,
     "frame": true,
     "width": 350,
-    "height": 600,
+    "height": 620,
     "position": "center",
     "min_width": 350,
-    "min_height": 600,
+    "min_height": 620,
     "resizable": true
   }
 }

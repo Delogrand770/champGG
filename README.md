@@ -13,6 +13,7 @@ Features include:
 * Auto saving item sets into the League of Legends client
 * Removing previous patch item sets (It doesn't touch item sets you have made)
 * Fast and slow download modes in the event your internet connection isn't the greatest
+* Garena Support
 
 # Setup
 
