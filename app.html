@@ -26,31 +26,103 @@ td{
 }
 </style>
 
+<script src="settings.js"></script>
+
 
 <script>
+var defaultSettings	= {
+	leagueInstallDir: "C:\\Riot Games",
+	garenaInstallDir: "C:\\Program Files (x86)\\GarenaLoL",
+	syncMode: false,
+	showFrequent: false,
+	showHighWin: true,
+	showStarters: true,
+	showConsumables: true,
+	showSkillOrder: true,
+	removeOldSets: true,
+	starterSkillsToShow: 5,
+	leagueItemsetDir: "\\League of Legends\\Config\\Champions\\",
+	garenaItemsetDir: "\\GameData\\Apps\\LoL\\Game\\Config\\Champions\\",
+	garenaRegion: false
+};
+
+var settings = settings || defaultSettings;
+
 var App = {
-	//Experimental feature to save the files to the league directory rather than the ItemSets directory
-	leagueDirectory: "", 
 	count: {started: 0, finished: 0},
 	patch: "",
-	sync: false,
-	errorFlag: false,
-	errorMsg: "",
-	startSkillsNum: 5, //How many skills to show to start
+	errorData: {flag: false, msg: false},
 	queue: [],
+	garenaDirValid: false,
+	leagueDirValid: false,
+	mode: "",
 	ini:function(){
-		document.getElementById('ui2').style.display = "none";
-		App.readSettings();
+		App.rmdir("locales");
+		App.applySettings();
+		App.writeSettings();
+	},
+	applySettings:function(){
+		document.getElementById("frequent").checked = settings.showFrequent;
+		document.getElementById("winrate").checked = settings.showHighWin;
+		document.getElementById("starters").checked = settings.showStarters;
+		document.getElementById("consumables").checked = settings.showConsumables;
+		document.getElementById("remove_old").checked = settings.removeOldSets;
+		document.getElementById("garena").checked = settings.garenaRegion;
+		document.getElementById("slowmode").checked = settings.syncMode;
+	},
+	syncSettings:function(){
+		settings.showFrequent = document.getElementById("frequent").checked;
+		settings.showHighWin = document.getElementById("winrate").checked;
+		settings.showStarters = document.getElementById("starters").checked;
+		settings.showConsumables = document.getElementById("consumables").checked;
+		settings.removeOldSets = document.getElementById("remove_old").checked;
+		settings.garenaRegion = document.getElementById("garena").checked;
+		settings.syncMode = document.getElementById("slowmode").checked;
+	},
+	writeSettings:function(){
+		var data = "var settings = " + JSON.stringify(settings, null, "\t");
+		App.writeFile("settings.js", data);
+	},
+	isValidDir:function(mode){ ///Needs to be fixed. Right now hardcoded
+		var path = settings[mode + "InstallDir"] + settings[mode + "ItemsetDir"];
+		//console.log(path)
+		App[mode + "DirValid"] = App.folderExists(path);
+		return App[mode + "DirValid"];
+	},
+	getSaveLocation:function(mode, log){
+		var dir = settings[mode + "InstallDir"] + settings[mode + "ItemsetDir"];
+		if (App[mode + "DirValid"]){
+			//App.log("Saving item sets to: " + App.getSaveLocation(mode, true) + "", "#ff0000");
+			return dir;
+		} else {
+			if (log){
+				App.log("Invalid save location:", "$ff0000");
+				App.log(dir, "#ff0000")
+				App.log("Saving to the champGG directory instead<br>", "#ff0000");			
+			}			
+
+			return "ItemSets/" + App.betterDate() + " - ";
+		}
+	},
+	iniDownload:function(){
+		App.syncSettings();
+		App.writeSettings();
+
+		App.mode = (settings.garenaRegion) ? "garena" : "league";
+		App.isValidDir(App.mode);
 
 		//Remove old patch settings. Does not effect any custom sets made in the league client
-		if (App.isChecked('remold')){	
-			App.rmdir(App.leagueDirectory);
-			App.mkdir(App.leagueDirectory);
+		if (settings.removeOldSets && App.isValidDir(App.mode)){
+			App.rmdir(App.getSaveLocation(App.mode));
+			App.mkdir(App.getSaveLocation(App.mode));
 
-			if (App.errorFlag){
-				App.log(App.errorMsg + "<br>", "red");
+			if (App.errorData.flag){
+				App.log(App.errorData.msg + "<br>", "red");
 			}
 		}
+
+
+		//console.log(App.leagueDirValid, App.garenaDirValid);
 
 		App.getAllSets();
 		// App.getOneSet("Fizz", "Top");
@@ -61,12 +133,10 @@ var App = {
 		// App.getOneSet("Kayle", "Jungle");
 		//Middle, ADC, Top, Jungle, Support
 
-		document.getElementById("ui").style.display = "none";
+		document.getElementById("ui1").style.display = "none";
 		document.getElementById("output").style.display = "block";
 	},
-	clean:function(){
-		App.rmdir("locales");
-	},
+
 	getAllSets:function(){
 		App.getPage("http://champion.gg/", function(data){App.getAllSetsCB(data)});
 	},
@@ -74,22 +144,27 @@ var App = {
 		if (data){
 			//console.log("Creating item sets for all champions...");
 
-			if (App.sync){
+			if (settings.syncMode){
 				App.log("Single Request mode enabled", "#0000ee");
 			}
 
 			App.log("Creating item sets for all champions...", "#c0c0c0");
-			var saveFolder = "ItemSets/" + App.betterDate() + " - ";
 			var list = data.match(/<a href="([^"]*)" style="display:block">/g);
 			App.patch = App.getBetween(data, "<small>Patch <strong>", "</strong>");
 			App.log("Champion.gg item set data is for patch " + App.patch + "<br>", "#c0c0c0");
+			var saveFolder = App.getSaveLocation(App.mode, true);
 			App.queue = [];
 
-			if (App.leagueDirectory){
-				saveFolder = App.leagueDirectory;
-				App.log("Auto Save Feature Enabled", "#0000ee");
+			App.log("ItemSet Save Location: ", "#0000ee");
+
+			if (App.isValidDir(App.mode)){
 				App.log(saveFolder + "<br>", "#0000ee");
+			} else {
+				App.log("champGG/ItemSets/<br>", "#0000ee");
 			}
+
+
+			//console.log(saveFolder, App.leagueDirValid, App.garenaDirValid);
 
 			for (var champPage in list){
 				App.updateCount(true);
@@ -100,14 +175,14 @@ var App = {
 
 				var passon = {champ:champ, role:role, saveFolder: saveFolder};
 
-				if (App.sync){
+				if (settings.syncMode){
 					App.queue.push({passon: passon, url: url});
 				} else {
 					App.getPage(url, function(data, passon){App.getOneSetCB(data, passon)}, passon);
 				}
 			}
 
-			if (App.sync){
+			if (settings.syncMode){
 				App.getAllSetsSync_Next();
 			}
 
@@ -124,11 +199,6 @@ var App = {
 	},
 	getOneSet:function(champ, role){
 		var saveFolder = "ItemSets/" + App.betterDate() + " - SINGLES - ";
-
-		if (App.leagueDirectory){
-			saveFolder = App.leagueDirectory;
-		}
-
 		var url = "http://champion.gg/champion/" + champ + "/" + role;
 		var passon = {champ:champ, role:role, saveFolder: saveFolder};
 		App.getPage(url, function(data, passon){App.getOneSetCB(data, passon)}, passon);
@@ -195,31 +265,28 @@ var App = {
 			"type": "Consumables"
 		};
 
-		// console.log(firstHWP);
-		// console.log(firstMG);
-
 		var roleFormatted = champJSON["role"].substring(0, 1) + champJSON["role"].toLowerCase().substring(1);
 
 		var blocks = [];
 
-		if (App.isChecked("starters")){
-			if (App.isChecked("frequent")){
+		if (settings.showStarters){
+			if (settings.showFrequent){
 				blocks.push(firstMGBlock);
 			}
-			if (App.isChecked("winrate")){
+			if (settings.showHighWin){
 				blocks.push(firstHWPBlock);
 			}
 		}
 
-		if (App.isChecked("frequent")){
+		if (settings.showFrequent){
 			blocks.push(fullMGBlock);
 		}
 
-		if (App.isChecked("winrate")){
+		if (settings.showHighWin){
 			blocks.push(fullHWPBlock);
 		}
 
-		if (App.isChecked("consumables")){
+		if (settings.showConsumables){
 			blocks.push(consumeBlock);
 		}
 
@@ -239,7 +306,7 @@ var App = {
 		};
 
 
-		if (!App.leagueDirectory){
+		if (!App.isValidDir(App.mode)){
 			saveFolder += "PATCH " + currentPatch.replace('.','_');
 		}
 
@@ -252,6 +319,10 @@ var App = {
 		if (!App.folderExists(saveFolder)) {
 			App.mkdir(saveFolder);
 		}
+
+
+		//console.log(saveFolder, App.leagueDirValid, App.garenaDirValid);
+
 
 		var fileName = currentPatch.replace('.','_') + "_" + roleFormatted + ".json";
 		fileName = saveFolder + "/" + fileName;
@@ -271,7 +342,7 @@ var App = {
 			App.count.finished++;
 			App.count.finished = (App.count.finished >= App.count.started) ? App.count.started : App.count.finished;
 
-			if (App.sync){
+			if (settings.syncMode){
 				App.getAllSetsSync_Next();
 			}
 
@@ -392,35 +463,7 @@ var App = {
 
 		return items;
 	},
-	readSettings:function(){
-		var settings = App.readFile("riot_games_directory.ini");	
 
-		if (settings){
-
-			var path = "";
-			var garena = settings.indexOf("GarenaLoL") > -1;
-
-			if (garena){
-				path = settings.replace(/"/g, "") + "\\GameData\\Apps\\LoL\\Game\\Config\\Champions\\";	
-			} else {
-				path = settings.replace(/"/g, "") + "\\League of Legends\\Config\\Champions\\";		
-			}
-
-
-			if (App.folderExists(path)){
-				App.leagueDirectory = path;
-			} else {
-				App.log("The path: " + path + " does not exist. Saving in champGG directory instead.", "#ff0000");
-			}
-		} else { //If we dont find a valid ini setting we try to auto set the default install directory
-			var usual_path = "C:\\Riot Games";
-
-			if (App.folderExists(usual_path)){
-				App.writeFile("riot_games_directory.ini", usual_path);
-				App.readSettings();
-			}
-		}
-	},
 	writeFile:function(path, data){
 		try {
 			var fs = require('fs');
@@ -428,9 +471,9 @@ var App = {
 		} catch (e){
 
 			if (e.message.indexOf("not permitted") > -1){
-				App.errorFlag = true;
-				App.errorMsg = "A permission error occured writing the item sets. Running the program as administrator may fix this.";
-				alert(App.errorMsg);
+				App.errorData.flag = true;
+				App.errorData.msg = "A permission error occured writing the item sets. Running the program as administrator may fix this. The program will now close.";
+				alert(App.errorData.msg);
 				window.close();
 			}
 
@@ -473,8 +516,8 @@ var App = {
 			}
 		} catch(e){
 			if (e.message.indexOf("not permitted") > -1){
-				App.errorFlag = true;
-				App.errorMsg = "A permission error occured removing the old item sets. Running the program as administrator may fix this.";
+				App.errorData.flag = true;
+				App.errorData.msg = "A permission error occured removing the old item sets. Running the program as administrator may fix this. The program can safely continue.";
 			}
 		}
 	},
@@ -484,6 +527,14 @@ var App = {
 
 		try { fs.mkdirSync(root); }
 		catch (e) {
+			if (e.message.indexOf("not permitted") > -1){
+				App.errorData.flag = true;
+				App.errorData.msg = "A permission error occured writing the item sets. Running the program as administrator may fix this. The program will now close.";
+				alert(App.errorData.msg);
+				window.close();
+			}
+
+
 			//dir wasn't made, something went wrong
 			if(!fs.statSync(root).isDirectory()) throw new Error(e);
 		}
@@ -507,28 +558,25 @@ var App = {
 		return 	date;
 	},
 	toggleConfig:function(){
-		var ele = document.getElementById('ui2');
-		ele.style.display = (ele.style.display == "block") ? "none" : "block";
+		var ele1 = document.getElementById('ui1');
+		var ele2 = document.getElementById('ui2');
+		ele2.style.display = (ele2.style.display == "block") ? "none" : "block";
+		ele1.style.display = (ele2.style.display == "block") ? "none" : "block";
 	},
-	setConfig:function(data){
-		if (data == "connection"){
-			App.sync = !App.sync;
+	setConfig:function(mode){
+		var dir = settings[mode + "InstallDir"] || "";
+		var data = prompt("Please enter the path for " + mode, dir);
 
-			if (App.sync){
-				alert('Slow mode enabled.\nThe app will now make requests to champion.gg one at a time.');
-			} else {
-				alert('Fast mode enabled.\nThe app will now make requests to champion.gg all at once.');
-			}
-		} else if (data == "leaguedir"){
-			var restored = App.readFile("riot_games_directory.ini") || "";
-			var data = prompt("Path to Riot Games or Garena folder \n(usually C:\\Riot Games or C:\\Program Files (x86)\\GarenaLoL)", restored);
-			var path = data.replace(/"/g, "");
+		if (!data){
+			return;
+		}
 
-			if (App.folderExists(path)){
-				App.writeFile("riot_games_directory.ini", path);
-			} else {
-				alert("The path: " + path + " does not exist");
-			}			
+		var path = data.replace(/"/g, "");
+
+		if (App.folderExists(path)){
+			settings[mode + "InstallDir"] = path;
+		} else {
+			alert("The path: " + path + " does not exist");
 		}
 	},
 	openURL:function(url){
@@ -537,13 +585,13 @@ var App = {
 };
 
 </script>
-<body onload="App.clean()">
+<body onload="App.ini()" onbeforeunload="App.writeSettings()">
 
-<div id="ui">
+<div id="ui1">
 	<center>
 		<br>
-		<b>Include</b>
 		<table>
+			<th><center>ItemSet Options</center></th>
 			<tr>
 				<td title="Include the most popular builds" style="width:150px;">frequent builds</td><td> <input id="frequent" type="checkbox" class="checkbox"></td>
 			</tr>
@@ -559,36 +607,32 @@ var App = {
 			<tr>
 				<td title="Include first 5 skills to build and skill max order">skill order</td><td> <input id="skills" type="checkbox" class="checkbox" checked></td>
 			</tr>
+
+			<tr><td>&nbsp;</td></tr>
+
+			<th><center>Client Options</center></th>
 			<tr>
-				<td title="Remove old champion.gg item sets. Will not remove custom sets you have created">remove old sets</td><td> <input id="remold" type="checkbox" class="checkbox" checked></td>
+				<td title="Remove old champion.gg item sets. Will not remove custom sets you have created">remove old sets</td><td> <input id="remove_old" type="checkbox" class="checkbox" checked></td>
+			</tr>
+			<tr>
+				<td title="Enables client compatibility with the Garena region">garena client</td><td> <input id="garena" type="checkbox" class="checkbox"></td>
+			</tr>
+			<tr>
+				<td title="A possible fix for connection errors and slower internet connections" style="width:150px;">slow download mode</td><td> <input id="slowmode" type="checkbox" class="checkbox"></td>
 			</tr>
 		</table>
-		</table>
+
 		<br>
-		<input type="button" value="Download" onclick="App.ini();" class="btn btn-default"> 
-		<input type="button" value="Help" onclick="App.toggleConfig();" class="btn btn-default">
+
+		<b>Change Save Locations</b>
+		<br>
+		<input type="button" value="League" onclick="App.setConfig('league');" class="btn btn-default">
+		<input type="button" value="Garena" onclick="App.setConfig('garena');" class="btn btn-default">
+
+		<br><br>
+		<input type="button" value="Download Item Sets" onclick="App.iniDownload();" class="btn btn-default">
 		<br><br>
 	</center>
-</div>
-
-<div id="ui2" style="font-size:11px;display:none;">	
-	<b>Connection Errors?</b>
-	<br><i>Toggle between fast and slow download mode (Default fast)</i>
-	<br>1. Click <a href="javascript:App.setConfig('connection')">here</a>
-	<br><br>
-	<b>League Directory Setup</b>
-	<br><i>These steps are needed if LOL is not installed at C:\Riot Games or if using Garena</i>
-	<br>1. Find your Riot Games or Garena folder
-	<br>2. Hold shift and right click on the folder
-	<br>3. Click "Copy as Path"
-	<br>4. Click <a href="javascript:App.setConfig('leaguedir')">here</a> and paste the path you just copied
-	<br>5. Item sets will now be auto saved into the LOL client
-	<br><br>
-	<b>I can't get League Directory Setup to work!</b>
-	<br> Don't worry, you can still copy and paste the item sets in to your league directory yourself. Below is where you copy the files to manually once you find your install directory.
-	<br><br><b>Where to manually save item sets?</b>
-	<br>\Riot Games\League of Legends\Config\Champions\
-	<br>\GarenaLoL\GameData\Apps\LoL\Game\Config\Champions\
 </div>
 
 
