@@ -83,16 +83,14 @@ var App = {
 		var data = "var settings = " + JSON.stringify(settings, null, "\t");
 		App.writeFile("settings.js", data);
 	},
-	isValidDir:function(mode){ ///Needs to be fixed. Right now hardcoded
+	isValidDir:function(mode){
 		var path = settings[mode + "InstallDir"] + settings[mode + "ItemsetDir"];
-		//console.log(path)
 		App[mode + "DirValid"] = App.folderExists(path);
 		return App[mode + "DirValid"];
 	},
 	getSaveLocation:function(mode, log){
 		var dir = settings[mode + "InstallDir"] + settings[mode + "ItemsetDir"];
 		if (App[mode + "DirValid"]){
-			//App.log("Saving item sets to: " + App.getSaveLocation(mode, true) + "", "#ff0000");
 			return dir;
 		} else {
 			if (log){
@@ -121,9 +119,6 @@ var App = {
 			}
 		}
 
-
-		//console.log(App.leagueDirValid, App.garenaDirValid);
-
 		App.getAllSets();
 		// App.getOneSet("Fizz", "Top");
 		// App.getOneSet("Fizz", "Middle");
@@ -142,8 +137,6 @@ var App = {
 	},
 	getAllSetsCB:function(data){
 		if (data){
-			//console.log("Creating item sets for all champions...");
-
 			if (settings.syncMode){
 				App.log("Single Request mode enabled", "#0000ee");
 			}
@@ -162,9 +155,6 @@ var App = {
 			} else {
 				App.log("champGG/ItemSets/<br>", "#0000ee");
 			}
-
-
-			//console.log(saveFolder, App.leagueDirValid, App.garenaDirValid);
 
 			for (var champPage in list){
 				App.updateCount(true);
@@ -188,7 +178,6 @@ var App = {
 
 		} else {
 			App.log("Error: No data returned from champion.gg", "#ff0000");
-			//console.log("Error");
 		}
 	},
 	getAllSetsSync_Next:function(){
@@ -230,7 +219,6 @@ var App = {
 		if (!firstMG["games"] || !firstHWP["games"] || !fullMG["games"] || !fullHWP["games"]){
 			App.log("Full data is unavailable for " + champ + " in " + role + " role", "#cc0000");
 			App.updateCount();
-			//console.log("Woops, full data is unavailable for " + champ + " in " + role + " role");
 			return;
 		}
 
@@ -320,10 +308,6 @@ var App = {
 			App.mkdir(saveFolder);
 		}
 
-
-		//console.log(saveFolder, App.leagueDirValid, App.garenaDirValid);
-
-
 		var fileName = currentPatch.replace('.','_') + "_" + roleFormatted + ".json";
 		fileName = saveFolder + "/" + fileName;
 
@@ -332,7 +316,6 @@ var App = {
 
 		App.updateCount();
 		App.log("Saved set for " + champ + " in " + role + " role", "#00cc00");
-		//console.log("Saved set for " + champ + " in " + role + " role to: " + fileName);
 	},
 	updateCount:function(starting){
 		starting = starting || false;
@@ -372,7 +355,7 @@ var App = {
 			fulllist.push(decode[arr[skill] - 1]);
 		}
 
-		var data = "" + fulllist.join("").slice(0, App.startSkillsNum) + " | " + decoded.join(">");
+		var data = "" + fulllist.join("").slice(0, settings.starterSkillsToShow) + " | " + decoded.join(">");
 
 		if (App.isChecked("skills")){
 			return " " + data;
@@ -534,7 +517,6 @@ var App = {
 				window.close();
 			}
 
-
 			//dir wasn't made, something went wrong
 			if(!fs.statSync(root).isDirectory()) throw new Error(e);
 		}
@@ -647,7 +629,7 @@ var App = {
 		<br>
 		Item Data provided by <a href="javascript:App.openURL('http://champion.gg')">http://champion.gg/</a>
 		<br>
-		Ported by Gavin Delphia
+		Created by Gavin Delphia
 	</center>
 </span>
 
