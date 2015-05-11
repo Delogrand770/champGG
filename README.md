@@ -17,7 +17,7 @@ Features include:
 
 # Setup
 
-1. Graab the program at https://github.com/Gavin770/champGG/releases/latest
+1. Grab the program at https://github.com/Gavin770/champGG/releases/latest
 2. Run champGG.exe
 
 # Alpha Version Setup
