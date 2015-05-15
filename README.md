@@ -23,9 +23,11 @@ Features include:
 2. Run champGG.exe
 
 # Screenshots
-
+Many configurable options
 ![Alt text](screenshot1.png?raw=true "Main Menu")
-![Alt text](screenshot2.png?raw=true "Main Menu")
+
+Quickly see which item sets are available for each role or champion
+![Alt text](screenshot2.png?raw=true "Champion Data")
 
 
 # Will Riot ban me?
