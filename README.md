@@ -23,6 +23,7 @@ Features include:
 # Screenshots
 
 ![Alt text](screenshot1.png?raw=true "Main Menu")
+![Alt text](screenshot2.png?raw=true "Main Menu")
 
 
 # Will Riot ban me?
