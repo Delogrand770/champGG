@@ -14,6 +14,8 @@ Features include:
 * Removing previous patch item sets (It doesn't touch item sets you have made)
 * Fast and slow download modes in the event your internet connection isn't the greatest
 * Garena Support
+* Quickly see which champions have item set data
+* Quickly sort which champs have item sets for top, middle, adc, support, jungle
 
 # Setup
 
