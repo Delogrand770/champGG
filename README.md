@@ -20,6 +20,11 @@ Features include:
 1. Grab the latest relase of champGG.exe: https://github.com/Gavin770/champGG/releases/latest
 2. Run champGG.exe
 
+# Screenshots
+
+![Alt text](screenshot1.png?raw=true "Main Menu")
+
+
 # Will Riot ban me?
 
 According to Reddit: A rioter did this originally, so it's safe. it doesn't affect gameplay, and you're not doing anything you couldn't do manually if you wanted to waste dozens of hours of your life every patch. Go wild!
