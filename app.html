@@ -11,18 +11,42 @@ Ported by Gavin Delphia in 2015
     <link href="bootstrap.min.css" rel="stylesheet">
 <style>
 html {
-  font-family: sans-serif;
-  -webkit-text-size-adjust: 100%;
-	  -ms-text-size-adjust: 100%;
+	font-family: sans-serif;
+	-webkit-text-size-adjust: 100%;
+	-ms-text-size-adjust: 100%;
 }
-body{
+body {
 	margin: 5px;
 }
 div {
 	border: 0px solid;
 }
-td{
+.guitable td {
 	cursor: help;
+}
+.champtable td{
+	text-align: center;
+	font-weight: bold;
+	font-size: 8pt;
+	width: 80px;
+}
+img {
+	height: 60px;
+	width: 60px;
+	cursor: pointer;
+}
+table {
+	table-layout: fixed;
+}
+img.desaturate {
+	-webkit-filter: grayscale(100%); 
+	filter: grayscale(100%); 
+	opacity: 0.7;
+}
+img.saturate {
+	-webkit-filter: grayscale(0%);
+	filter: grayscale(0%);
+	opacity: 1.0;
 }
 </style>
 
@@ -60,6 +84,7 @@ var App = {
 		App.rmdir("locales");
 		App.applySettings();
 		App.writeSettings();
+		GUI.ini();
 	},
 	applySettings:function(){
 		document.getElementById("frequent").checked = settings.showFrequent;
@@ -130,6 +155,7 @@ var App = {
 
 		document.getElementById("ui1").style.display = "none";
 		document.getElementById("output").style.display = "block";
+		document.getElementById("champImgs").style.display = "block";
 	},
 
 	getAllSets:function(){
@@ -314,8 +340,11 @@ var App = {
 		var itemSetJSON = JSON.stringify(itemSetArr, null, '\t');
 		App.writeFile(fileName, itemSetJSON);
 
+
+		GUI.processChamp(champJSON["key"], roleFormatted.toLowerCase());
+
 		App.updateCount();
-		App.log("Saved set for " + champ + " in " + role + " role", "#00cc00");
+		//App.log("Saved set for " + champ + " in " + role + " role", "#00cc00");
 	},
 	updateCount:function(starting){
 		starting = starting || false;
@@ -563,16 +592,206 @@ var App = {
 	},
 	openURL:function(url){
 		window.open(url);
+	},
+	fileExist:function(filename){
+		var fs = require('fs');
+		return fs.existsSync(filename);
+	},
+	getFile:function(uri, filename, callback){
+		var http = require('http');
+		var fs = require('fs');
+
+		if (!App.fileExist(filename)){
+			var file = fs.createWriteStream(filename);
+			var request = http.get(uri, function(response) {
+			  response.pipe(file);
+			  setTimeout(callback, 500);
+			});			
+		} else {
+			callback();
+		}
 	}
+		
 };
 
 </script>
-<body onload="App.ini()" onbeforeunload="App.writeSettings()">
 
-<div id="ui1">
+<script>
+var GUI = {
+	CDNVer: "",
+	imgTotals: [],
+	champions: [],
+	cdata: {},
+	ini:function(){
+		App.mkdir("res");
+		GUI.getCDNData();
+	},
+	getCDNData:function(){ //Gets the latest Data Dragon Version Number
+				App.getPage("http://ddragon.leagueoflegends.com/api/versions.json", function(data){GUI.getCDNDataCB1(data)});
+	},
+	getCDNDataCB1:function(data){  //Gets the lastest champion list available on Data Dragon
+		GUI.CDNVer = App.getBetween(data, '["', '",');
+		console.log("GUI.CDNVer =>", GUI.CDNVer);
+
+		if (App.fileExist("res/champData.json")){
+			var champDataRaw = App.readFile("res/champData.json");
+			var champData = JSON.parse(champDataRaw);
+
+			console.log("Local CDNVer =>", champData.version);
+			if (champData.version != GUI.CDNVer){
+				console.log("CDN Versions mismatch. Updating from internet");
+				App.getPage("http://ddragon.leagueoflegends.com/cdn/" + GUI.CDNVer + "/data/en_US/champion.json", function(data){GUI.getCDNDataCB2(data)});	
+			} else {
+				console.log("CDN Versions match! No new champion data to download.");
+				GUI.getCDNDataCB2(champDataRaw, true);
+			}
+		} else {
+			console.log("A local CDN Version does not exist. Downloading from internet");
+			App.getPage("http://ddragon.leagueoflegends.com/cdn/" + GUI.CDNVer + "/data/en_US/champion.json", function(data){GUI.getCDNDataCB2(data)});		
+		}
+	},
+	processChamp:function(champ, role){
+		role = (role == "duo_carry") ? "adc" : role;
+		role = (role == "duo_support") ? "support" : role;
+		GUI.cdata[champ] = GUI.cdata[champ] || {roles: []};
+		document.getElementById('champ_' + champ).className = "saturate";
+		GUI.cdata[champ].roles.push(role);
+	},
+	showByRole:function(role){
+		try{
+			GUI.resetRoleRow(role);
+
+			for (item in GUI.cdata){
+				var champ = item;
+				var roles = GUI.cdata[champ].roles;
+				var hasRole = roles.indexOf(role) > -1;
+				document.getElementById('champ_' + champ).className = (hasRole) ? "saturate" : "desaturate";
+			}			
+		} catch(e){
+			return;
+		}
+
+	},	
+	resetShowByRole:function(mode){
+		for (item in GUI.cdata){
+			var champ = item;
+			document.getElementById('champ_' + champ).className = mode;
+		}
+
+		GUI.resetRoleRow();
+	},
+	resetRoleRow:function(role){
+		document.getElementById('role_top').className = "desaturate";
+		document.getElementById('role_middle').className = "desaturate";
+		document.getElementById('role_adc').className = "desaturate";
+		document.getElementById('role_support').className = "desaturate";
+		document.getElementById('role_jungle').className = "desaturate";
+
+		if (role){
+			document.getElementById('role_' + role).className = "saturate";			
+		}
+	},
+	getCDNDataCB2:function(data){ //Parse the champion list
+		var champData = JSON.parse(data).data;
+		console.log("ChampData =>", champData);
+
+		for (champ in champData){
+			GUI.champions.push(champ);
+		}
+
+		App.writeFile("res/champData.json", data);
+
+		GUI.imgTotals = {total: GUI.champions.length + 6, count: 0}; //+6 for role icons
+
+		//Grab role icons
+		for (var i = 657; i < 663; i++){
+			App.getFile("http://ddragon.leagueoflegends.com/cdn/" + GUI.CDNVer + "/img/profileicon/" + i + ".png", "res/" + i + ".png", function(){GUI.countImage()});			
+		}
+
+		for (champ in champData){
+			App.getFile("http://ddragon.leagueoflegends.com/cdn/" + GUI.CDNVer + "/img/champion/" + champ + ".png", "res/" + champ + ".png", function(){GUI.countImage()});
+		}
+
+		console.log("champions =>", GUI.champions);
+	},
+	countImage:function(){
+		GUI.imgTotals.count++;
+
+		document.getElementById('pbar').innerHTML = 'Updating champion database.... [' + Math.round(GUI.imgTotals.count / GUI.imgTotals.total * 100) + '%]';
+		document.getElementById('pbar').style.width = Math.round(GUI.imgTotals.count / GUI.imgTotals.total * 100) + "%";
+
+		if (GUI.imgTotals.count >= GUI.imgTotals.total){
+			GUI.drawChampTable();
+			document.getElementById("champImgs").style.display = "none";
+			document.getElementById("ui1").style.display = "block";
+		}
+	},
+	drawChampTable:function(){
+		var data = '<table class="table table-bordered table-condensed champtable" style="width:320px;">';
+		data += '<tr>';
+		data += '<td><img src="res/662.png" class="desaturate" id="role_top" onmouseover="GUI.showByRole(\'top\')" onmouseout="GUI.resetShowByRole(\'saturate\')"><br>Top</td>';
+		data += '<td><img src="res/659.png" class="desaturate" id="role_middle" onmouseover="GUI.showByRole(\'middle\')" onmouseout="GUI.resetShowByRole(\'saturate\')"><br>Middle</td>';
+		data += '<td><img src="res/660.png" class="desaturate" id="role_adc" onmouseover="GUI.showByRole(\'adc\')" onmouseout="GUI.resetShowByRole(\'saturate\')"><br>ADC</td>';
+		data += '<td><img src="res/661.png" class="desaturate" id="role_support" onmouseover="GUI.showByRole(\'support\')" onmouseout="GUI.resetShowByRole(\'saturate\')"><br>support</td>';
+		data += '<td><img src="res/657.png" class="desaturate" id="role_jungle" onmouseover="GUI.showByRole(\'jungle\')" onmouseout="GUI.resetShowByRole(\'saturate\')"><br>jungle</td>';
+		data += '</tr>';
+		data += '</table>';
+	
+		data += '<table class="table table-bordered table-condensed champtable">';
+		var count = 0;
+		var max = GUI.champions.length;
+		for (var row = 0; row < 100 && count < max; row++){
+			data += "<tr>";
+			for (var col = 0; col < 15; col++){
+				if (count < max){
+					data += '<td onmouseover="GUI.showRoles(\'' + GUI.champions[count] + '\');" onmouseout="GUI.resetRoleRow()"><img src="res/' + GUI.champions[count] + '.png" class="desaturate" id="champ_' + GUI.champions[count] + '"><br>' + GUI.champions[count] + '</td>';
+				} else {	
+					data += '<td></td>';
+				}
+				count++;
+			}
+			data += "</tr>";
+		}
+		data += "</table>";
+
+		document.getElementById('champImgs').innerHTML = data;
+	},
+	showRoles:function(champ){
+		try{
+			var availableRoles = ["top", "middle", "support", "adc", "jungle"];
+			var champRoles = GUI.cdata[champ].roles;
+
+			for (role in availableRoles){
+				document.getElementById("role_" + availableRoles[role]).className = "desaturate";
+			}
+
+			for (role in champRoles){
+				document.getElementById("role_" + champRoles[role]).className = "saturate";
+			}			
+		} catch(e){
+			return false;
+		}
+
+	}
+};
+</script>
+
+<body onload="App.ini()">
+
+<span style="font-size:10px;color:#c0c0c0;" id="status">&nbsp;</span>
+
+<center>
+	<div id="champImgs" style="display:block;">
+		<div class="progress" style="width:500px;">
+			<div class="progress-bar progress-bar-success active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%;color:black;" id="pbar">Updating champion database.... [0%]</div>
+		</div>
+	</div>
+</center>
+
+<div id="ui1" style="display:none;">
 	<center>
 		<br>
-		<table>
+		<table class="guitable">
 			<th><center>ItemSet Options</center></th>
 			<tr>
 				<td title="Include the most popular builds" style="width:150px;">frequent builds</td><td> <input id="frequent" type="checkbox" class="checkbox"></td>
@@ -613,14 +832,9 @@ var App = {
 
 		<br><br>
 		<input type="button" value="Download Item Sets" onclick="App.iniDownload();" class="btn btn-default">
-		<br><br>
 	</center>
 </div>
 
-
-<div id="output" style="height:480px;width:100%;overflow-y:scroll;font-size:10px;color:#c0c0c0;display:none;" class="well"></div>
-
-<span style="font-size:10px;color:#c0c0c0;" id="status"></span>
 
 <span style="font-size:10px;color:#c0c0c0;" id="credits">
 	<center>
@@ -633,5 +847,7 @@ var App = {
 	</center>
 </span>
 
+<br><br>
+<div id="output" style="height:200px;width:100%;overflow-y:scroll;font-size:10px;color:#c0c0c0;display:none;" class="well"></div>
 </body>
 </html>

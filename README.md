@@ -17,12 +17,7 @@ Features include:
 
 # Setup
 
-1. Grab the champGG.exe at https://github.com/Gavin770/champGG/releases/latest
-2. Run champGG.exe
-
-# Alpha Version Setup
-
-1. Grab the program at https://github.com/Gavin770/champGG/releases/download/v2.0-alpha/champGG.exe
+1. Grab the latest relase of champGG.exe: https://github.com/Gavin770/champGG/releases/latest
 2. Run champGG.exe
 
 # Will Riot ban me?
