@@ -29,6 +29,8 @@ Many configurable options
 Quickly see which item sets are available for each role or champion
 ![Alt text](screenshot2.png?raw=true "Champion Data")
 
+Here is what it looks like in game for Annie playing middle
+![Alt text](screenshot3.png?raw=true "Ingame View")
 
 # Will Riot ban me?
 
