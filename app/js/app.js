@@ -1,59 +1,3 @@
-<!--
-Ported by Gavin Delphia in 2015
--->
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-<title>champGG itemSet utility</title>
-
-    <link href="bootstrap.min.css" rel="stylesheet">
-<style>
-html {
-	font-family: sans-serif;
-	-webkit-text-size-adjust: 100%;
-	-ms-text-size-adjust: 100%;
-}
-body {
-	margin: 5px;
-}
-div {
-	border: 0px solid;
-}
-.guitable td {
-	cursor: help;
-}
-.champtable td{
-	text-align: center;
-	font-weight: bold;
-	font-size: 8pt;
-	width: 80px;
-}
-img {
-	height: 60px;
-	width: 60px;
-	cursor: pointer;
-}
-table {
-	table-layout: fixed;
-}
-img.desaturate {
-	-webkit-filter: grayscale(100%); 
-	filter: grayscale(100%); 
-	opacity: 0.7;
-}
-img.saturate {
-	-webkit-filter: grayscale(0%);
-	filter: grayscale(0%);
-	opacity: 1.0;
-}
-</style>
-
-<script src="settings.js"></script>
-
-
-<script>
 var defaultSettings	= {
 	leagueInstallDir: "C:\\Riot Games",
 	garenaInstallDir: "C:\\Program Files (x86)\\GarenaLoL",
@@ -84,7 +28,59 @@ var App = {
 		App.rmdir("locales");
 		App.applySettings();
 		App.writeSettings();
+		App.attachEvents();
 		GUI.ini();
+	},
+	attachEvents:function(){
+		//Checkbox Toggles
+		document.getElementById("frequent_td").addEventListener("click", App.checkBoxHelper);
+		document.getElementById("winrate_td").addEventListener("click", App.checkBoxHelper);
+		document.getElementById("starters_td").addEventListener("click", App.checkBoxHelper);
+		document.getElementById("consumables_td").addEventListener("click", App.checkBoxHelper);
+		document.getElementById("skills_td").addEventListener("click", App.checkBoxHelper);
+		document.getElementById("remove_old_td").addEventListener("click", App.checkBoxHelper);
+		document.getElementById("garena_td").addEventListener("click", App.checkBoxHelper);
+		document.getElementById("slowmode_td").addEventListener("click", App.checkBoxHelper);
+
+		document.getElementById("frequent_td").addEventListener("mouseover", App.showTip);
+		document.getElementById("winrate_td").addEventListener("mouseover", App.showTip);
+		document.getElementById("starters_td").addEventListener("mouseover", App.showTip);
+		document.getElementById("consumables_td").addEventListener("mouseover", App.showTip);
+		document.getElementById("skills_td").addEventListener("mouseover", App.showTip);
+		document.getElementById("remove_old_td").addEventListener("mouseover", App.showTip);
+		document.getElementById("garena_td").addEventListener("mouseover", App.showTip);
+		document.getElementById("slowmode_td").addEventListener("mouseover", App.showTip);
+
+		document.getElementById("frequent_td").addEventListener("mouseout", App.hideTip);
+		document.getElementById("winrate_td").addEventListener("mouseout", App.hideTip);
+		document.getElementById("starters_td").addEventListener("mouseout", App.hideTip);
+		document.getElementById("consumables_td").addEventListener("mouseout", App.hideTip);
+		document.getElementById("skills_td").addEventListener("mouseout", App.hideTip);
+		document.getElementById("remove_old_td").addEventListener("mouseout", App.hideTip);
+		document.getElementById("garena_td").addEventListener("mouseout", App.hideTip);
+		document.getElementById("slowmode_td").addEventListener("mouseout", App.hideTip);
+
+		//Buttons
+		document.getElementById("configLeague_btn").addEventListener("click", function(){App.setConfig('league')});
+		document.getElementById("configGarena_btn").addEventListener("click", function(){App.setConfig('garena')});
+		document.getElementById("startDownload_btn").addEventListener("click", App.iniDownload);
+	},
+	showTip:function(){
+		var tipBox = document.getElementById('tipBox');
+		var source = event.target || event.srcElement;
+
+		tipBox.innerHTML = source.title;
+		tipBox.style.display = "block";
+	},
+	hideTip:function(){
+		document.getElementById('tipBox').style.display = "none";
+	},
+	checkBoxHelper:function(){
+		var source = event.target || event.srcElement;
+		var sourceId = source.id;
+		var boxId = sourceId.slice(0, sourceId.length - 3);
+		var boxEle = document.getElementById(boxId);
+		boxEle.checked = !boxEle.checked;
 	},
 	applySettings:function(){
 		document.getElementById("frequent").checked = settings.showFrequent;
@@ -119,7 +115,7 @@ var App = {
 			return dir;
 		} else {
 			if (log){
-				App.log("Invalid save location:", "$ff0000");
+				App.log("Invalid save location:", "#ff0000");
 				App.log(dir, "#ff0000")
 				App.log("Saving to the champGG directory instead<br>", "#ff0000");			
 			}			
@@ -153,6 +149,7 @@ var App = {
 		// App.getOneSet("Kayle", "Jungle");
 		//Middle, ADC, Top, Jungle, Support
 
+		GUI.maximizeWindow();
 		document.getElementById("ui1").style.display = "none";
 		document.getElementById("output").style.display = "block";
 		document.getElementById("champImgs").style.display = "block";
@@ -167,10 +164,10 @@ var App = {
 				App.log("Single Request mode enabled", "#0000ee");
 			}
 
-			App.log("Creating item sets for all champions...", "#c0c0c0");
+			App.log("Creating item sets for all champions...", "##808080");
 			var list = data.match(/<a href="([^"]*)" style="display:block">/g);
 			App.patch = App.getBetween(data, "<small>Patch <strong>", "</strong>");
-			App.log("Champion.gg item set data is for patch " + App.patch + "<br>", "#c0c0c0");
+			App.log("Champion.gg item set data is for patch " + App.patch + "<br>", "##808080");
 			var saveFolder = App.getSaveLocation(App.mode, true);
 			App.queue = [];
 
@@ -613,241 +610,3 @@ var App = {
 	}
 		
 };
-
-</script>
-
-<script>
-var GUI = {
-	CDNVer: "",
-	imgTotals: [],
-	champions: [],
-	cdata: {},
-	ini:function(){
-		App.mkdir("res");
-		GUI.getCDNData();
-	},
-	getCDNData:function(){ //Gets the latest Data Dragon Version Number
-				App.getPage("http://ddragon.leagueoflegends.com/api/versions.json", function(data){GUI.getCDNDataCB1(data)});
-	},
-	getCDNDataCB1:function(data){  //Gets the lastest champion list available on Data Dragon
-		GUI.CDNVer = App.getBetween(data, '["', '",');
-		console.log("GUI.CDNVer =>", GUI.CDNVer);
-
-		if (App.fileExist("res/champData.json")){
-			var champDataRaw = App.readFile("res/champData.json");
-			var champData = JSON.parse(champDataRaw);
-
-			console.log("Local CDNVer =>", champData.version);
-			if (champData.version != GUI.CDNVer){
-				console.log("CDN Versions mismatch. Updating from internet");
-				App.getPage("http://ddragon.leagueoflegends.com/cdn/" + GUI.CDNVer + "/data/en_US/champion.json", function(data){GUI.getCDNDataCB2(data)});	
-			} else {
-				console.log("CDN Versions match! No new champion data to download.");
-				GUI.getCDNDataCB2(champDataRaw, true);
-			}
-		} else {
-			console.log("A local CDN Version does not exist. Downloading from internet");
-			App.getPage("http://ddragon.leagueoflegends.com/cdn/" + GUI.CDNVer + "/data/en_US/champion.json", function(data){GUI.getCDNDataCB2(data)});		
-		}
-	},
-	processChamp:function(champ, role){
-		role = (role == "duo_carry") ? "adc" : role;
-		role = (role == "duo_support") ? "support" : role;
-		GUI.cdata[champ] = GUI.cdata[champ] || {roles: []};
-		document.getElementById('champ_' + champ).className = "saturate";
-		GUI.cdata[champ].roles.push(role);
-	},
-	showByRole:function(role){
-		try{
-			GUI.resetRoleRow(role);
-
-			for (item in GUI.cdata){
-				var champ = item;
-				var roles = GUI.cdata[champ].roles;
-				var hasRole = roles.indexOf(role) > -1;
-				document.getElementById('champ_' + champ).className = (hasRole) ? "saturate" : "desaturate";
-			}			
-		} catch(e){
-			return;
-		}
-
-	},	
-	resetShowByRole:function(mode){
-		for (item in GUI.cdata){
-			var champ = item;
-			document.getElementById('champ_' + champ).className = mode;
-		}
-
-		GUI.resetRoleRow();
-	},
-	resetRoleRow:function(role){
-		document.getElementById('role_top').className = "desaturate";
-		document.getElementById('role_middle').className = "desaturate";
-		document.getElementById('role_adc').className = "desaturate";
-		document.getElementById('role_support').className = "desaturate";
-		document.getElementById('role_jungle').className = "desaturate";
-
-		if (role){
-			document.getElementById('role_' + role).className = "saturate";			
-		}
-	},
-	getCDNDataCB2:function(data){ //Parse the champion list
-		var champData = JSON.parse(data).data;
-		console.log("ChampData =>", champData);
-
-		for (champ in champData){
-			GUI.champions.push(champ);
-		}
-
-		App.writeFile("res/champData.json", data);
-
-		GUI.imgTotals = {total: GUI.champions.length + 6, count: 0}; //+6 for role icons
-
-		//Grab role icons
-		for (var i = 657; i < 663; i++){
-			App.getFile("http://ddragon.leagueoflegends.com/cdn/" + GUI.CDNVer + "/img/profileicon/" + i + ".png", "res/" + i + ".png", function(){GUI.countImage()});			
-		}
-
-		for (champ in champData){
-			App.getFile("http://ddragon.leagueoflegends.com/cdn/" + GUI.CDNVer + "/img/champion/" + champ + ".png", "res/" + champ + ".png", function(){GUI.countImage()});
-		}
-
-		console.log("champions =>", GUI.champions);
-	},
-	countImage:function(){
-		GUI.imgTotals.count++;
-
-		document.getElementById('pbar').innerHTML = 'Updating champion database.... [' + Math.round(GUI.imgTotals.count / GUI.imgTotals.total * 100) + '%]';
-		document.getElementById('pbar').style.width = Math.round(GUI.imgTotals.count / GUI.imgTotals.total * 100) + "%";
-
-		if (GUI.imgTotals.count >= GUI.imgTotals.total){
-			GUI.drawChampTable();
-			document.getElementById("champImgs").style.display = "none";
-			document.getElementById("ui1").style.display = "block";
-		}
-	},
-	drawChampTable:function(){
-		var data = '<table class="table table-bordered table-condensed champtable" style="width:320px;">';
-		data += '<tr>';
-		data += '<td><img src="res/662.png" class="desaturate" id="role_top" onmouseover="GUI.showByRole(\'top\')" onmouseout="GUI.resetShowByRole(\'saturate\')"><br>Top</td>';
-		data += '<td><img src="res/659.png" class="desaturate" id="role_middle" onmouseover="GUI.showByRole(\'middle\')" onmouseout="GUI.resetShowByRole(\'saturate\')"><br>Middle</td>';
-		data += '<td><img src="res/660.png" class="desaturate" id="role_adc" onmouseover="GUI.showByRole(\'adc\')" onmouseout="GUI.resetShowByRole(\'saturate\')"><br>ADC</td>';
-		data += '<td><img src="res/661.png" class="desaturate" id="role_support" onmouseover="GUI.showByRole(\'support\')" onmouseout="GUI.resetShowByRole(\'saturate\')"><br>support</td>';
-		data += '<td><img src="res/657.png" class="desaturate" id="role_jungle" onmouseover="GUI.showByRole(\'jungle\')" onmouseout="GUI.resetShowByRole(\'saturate\')"><br>jungle</td>';
-		data += '</tr>';
-		data += '</table>';
-	
-		data += '<table class="table table-bordered table-condensed champtable">';
-		var count = 0;
-		var max = GUI.champions.length;
-		for (var row = 0; row < 100 && count < max; row++){
-			data += "<tr>";
-			for (var col = 0; col < 15; col++){
-				if (count < max){
-					data += '<td onmouseover="GUI.showRoles(\'' + GUI.champions[count] + '\');" onmouseout="GUI.resetRoleRow()"><img src="res/' + GUI.champions[count] + '.png" class="desaturate" id="champ_' + GUI.champions[count] + '"><br>' + GUI.champions[count] + '</td>';
-				} else {	
-					data += '<td></td>';
-				}
-				count++;
-			}
-			data += "</tr>";
-		}
-		data += "</table>";
-
-		document.getElementById('champImgs').innerHTML = data;
-	},
-	showRoles:function(champ){
-		try{
-			var availableRoles = ["top", "middle", "support", "adc", "jungle"];
-			var champRoles = GUI.cdata[champ].roles;
-
-			for (role in availableRoles){
-				document.getElementById("role_" + availableRoles[role]).className = "desaturate";
-			}
-
-			for (role in champRoles){
-				document.getElementById("role_" + champRoles[role]).className = "saturate";
-			}			
-		} catch(e){
-			return false;
-		}
-
-	}
-};
-</script>
-
-<body onload="App.ini()">
-
-<span style="font-size:10px;color:#c0c0c0;" id="status">&nbsp;</span>
-
-<center>
-	<div id="champImgs" style="display:block;">
-		<div class="progress" style="width:500px;">
-			<div class="progress-bar progress-bar-success active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%;color:black;" id="pbar">Updating champion database.... [0%]</div>
-		</div>
-	</div>
-</center>
-
-<div id="ui1" style="display:none;">
-	<center>
-		<br>
-		<table class="guitable">
-			<th><center>ItemSet Options</center></th>
-			<tr>
-				<td title="Include the most popular builds" style="width:150px;">frequent builds</td><td> <input id="frequent" type="checkbox" class="checkbox"></td>
-			</tr>
-			<tr>
-				<td title="Include builds with the highest win rate">high win% builds</td><td> <input id="winrate" type="checkbox" class="checkbox" checked></td>
-			</tr>
-			<tr>
-				<td title="Include a set specific for starter items">starter items</td><td> <input id="starters" type="checkbox" class="checkbox" checked></td>
-			</tr>
-			<tr>
-				<td title="Include a generic consumable set for all champions">consumables</td><td> <input id="consumables" type="checkbox" class="checkbox" checked></td>
-			</tr>
-			<tr>
-				<td title="Include first 5 skills to build and skill max order">skill order</td><td> <input id="skills" type="checkbox" class="checkbox" checked></td>
-			</tr>
-
-			<tr><td>&nbsp;</td></tr>
-
-			<th><center>Client Options</center></th>
-			<tr>
-				<td title="Remove old champion.gg item sets. Will not remove custom sets you have created">remove old sets</td><td> <input id="remove_old" type="checkbox" class="checkbox" checked></td>
-			</tr>
-			<tr>
-				<td title="Enables client compatibility with the Garena region">garena client</td><td> <input id="garena" type="checkbox" class="checkbox"></td>
-			</tr>
-			<tr>
-				<td title="A possible fix for connection errors and slower internet connections" style="width:150px;">slow download mode</td><td> <input id="slowmode" type="checkbox" class="checkbox"></td>
-			</tr>
-		</table>
-
-		<br>
-
-		<b>Change Save Locations</b>
-		<br>
-		<input type="button" value="League" onclick="App.setConfig('league');" class="btn btn-default">
-		<input type="button" value="Garena" onclick="App.setConfig('garena');" class="btn btn-default">
-
-		<br><br>
-		<input type="button" value="Download Item Sets" onclick="App.iniDownload();" class="btn btn-default">
-	</center>
-</div>
-
-
-<span style="font-size:10px;color:#c0c0c0;" id="credits">
-	<center>
-		<br>
-		Original PHP script by ebildude123 <a href="javascript:App.openURL('https://github.com/ebildude123/champion.gg-item-set-creator')">Github</a>
-		<br>
-		Item Data provided by <a href="javascript:App.openURL('http://champion.gg')">http://champion.gg/</a>
-		<br>
-		Created by Gavin Delphia
-	</center>
-</span>
-
-<br><br>
-<div id="output" style="height:200px;width:100%;overflow-y:scroll;font-size:10px;color:#c0c0c0;display:none;" class="well"></div>
-</body>
-</html>

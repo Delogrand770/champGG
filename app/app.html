@@ -1,0 +1,108 @@
+<!--
+Ported by Gavin Delphia in 2015
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<title>champGG itemSet utility</title>
+
+<link href="./css/bootstrap.min.css" rel="stylesheet">
+<link href="./css/app.css" rel="stylesheet">
+
+<script src="../settings.js"></script>
+<script src="./js/app.js"></script>
+<script src="./js/gui.js"></script>
+
+<body onload="App.ini()">
+
+<span id="status">&nbsp;</span>
+
+<center>
+	<div id="champImgs">
+		<b>Grabbing the latest champion data!</b>
+		<div class="progress">
+			<div class="progress-bar progress-bar-info active" role="progressbar" id="pbar">Updating.... [0%]</div>
+		</div>
+	</div>
+</center>
+
+<div id="ui1">
+	<center>
+		<br>
+		<table class="guitable">
+			<th><center>ItemSet Options</center></th>
+			<tr>
+				<td title="Includes the most popular builds" id="frequent_td">frequent builds</td>
+				<td><input id="frequent" type="checkbox" class="checkbox"></td>
+			</tr>
+			<tr>
+				<td title="Includes builds with the highest win rate" id="winrate_td">high win% builds</td>
+				<td><input id="winrate" type="checkbox" class="checkbox" checked></td>
+			</tr>
+			<tr>
+				<td title="Includes a set specific for starter items" id="starters_td">starter items</td>
+				<td><input id="starters" type="checkbox" class="checkbox" checked></td>
+			</tr>
+			<tr>
+				<td title="Includes a generic consumable set for all champions" id="consumables_td">consumables</td>
+				<td><input id="consumables" type="checkbox" class="checkbox" checked></td>
+			</tr>
+			<tr>
+				<td title="Include the first 5 skills to build and skill max order" id="skills_td">skill order</td>
+				<td><input id="skills" type="checkbox" class="checkbox" checked></td>
+			</tr>
+
+			<tr>
+				<td>&nbsp;</td>
+			</tr>
+
+			<th><center>Client Options</center></th>
+			<tr>
+				<td title="Remove old champion.gg item sets. This will not remove custom sets you have created" id="remove_old_td">remove old sets</td>
+				<td><input id="remove_old" type="checkbox" class="checkbox" checked></td>
+			</tr>
+			<tr>
+				<td title="Switches to client compatibility with the Garena region. Only check this if you are using the garena region league of legends client" id="garena_td">garena client</td>
+				<td><input id="garena" type="checkbox" class="checkbox"></td>
+			</tr>
+			<tr>
+				<td title="A possible fix for connection errors and slower internet connections" id="slowmode_td">slow download mode</td>
+				<td><input id="slowmode" type="checkbox" class="checkbox"></td>
+			</tr>
+		</table>
+
+		<br>
+
+		<b>Change Save Locations</b>
+		<br>
+		<input type="button" value="League" class="btn btn-default" id="configLeague_btn">
+		<input type="button" value="Garena" class="btn btn-default" id="configGarena_btn">
+
+		<br><br>
+		<input type="button" value="Download Item Sets" class="btn btn-info" id="startDownload_btn">
+	</center>
+</div>
+
+
+<span id="credits">
+	<center>
+		<br>
+		Original PHP script by ebildude123 <a href="javascript:App.openURL('https://github.com/ebildude123/champion.gg-item-set-creator')">Github</a>
+		<br>
+		Item Data provided by <a href="javascript:App.openURL('http://champion.gg')">http://champion.gg/</a>
+		<br>
+		Created by Gavin Delphia
+	</center>
+</span>
+
+<br><br>
+<div id="output" class="well mywell"></div>
+
+<center>
+	<span id="tipBox" class="well well-sm"></span>
+</center>
+
+</body>
+</html>
