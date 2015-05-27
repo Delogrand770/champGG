@@ -14,11 +14,23 @@ Features include:
 * Removing previous patch item sets (It doesn't touch item sets you have made)
 * Fast and slow download modes in the event your internet connection isn't the greatest
 * Garena Support
+* Quickly see which champions have item set data
+* Quickly sort which champs have item sets for top, middle, adc, support, jungle
 
 # Setup
 
 1. Grab the latest relase of champGG.exe: https://github.com/Gavin770/champGG/releases/latest
 2. Run champGG.exe
+
+# Screenshots
+Many configurable options
+![Alt text](screenshot1.png?raw=true "Main Menu")
+
+Quickly see which item sets are available for each role or champion
+![Alt text](screenshot2.png?raw=true "Champion Data")
+
+Here is what it looks like in game for Annie playing middle
+![Alt text](screenshot3.png?raw=true "Ingame View")
 
 # Will Riot ban me?
 
