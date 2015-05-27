@@ -6,7 +6,7 @@
   "window": {
     "title": "champGG",
     "icon": "app/icon.png",
-    "toolbar": true,
+    "toolbar": false,
     "frame": true,
     "width": 350,
     "height": 620,
