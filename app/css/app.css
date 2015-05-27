@@ -19,9 +19,9 @@ div {
 	width: 80px;
 }
 img {
-	height: 60px;
-	width: 60px;
 	cursor: pointer;
+	width: 60px;
+	height: 60px;
 }
 table {
 	table-layout: fixed;
@@ -37,12 +37,12 @@ img.saturate {
 	opacity: 1.0;
 }
 .mywell {
-	height: 200px;
-	width: 100%;
-	overflow-y: scroll;
-	font-size: 10px;
 	color: #a0a0a0;
 	display: none;
+	font-size: 10px;
+	height: 200px;
+	overflow-y: scroll;
+	width: 100%;
 }
 #frequent_td {
 	width: 150px;
@@ -52,16 +52,16 @@ img.saturate {
 	text-align: center;
 }
 #pbar{
-	width: 0%;
 	color: black;
+	width: 0%;
 }
 #status, #credits, #tipBox{
+	color: #808080;
 	font-size: 10px;
-	color: #808080;	
 }
 #tipBox{
-	font-size: 11px;
-	width: 320px;
-	overflow-x: wrap;
 	display: none;
+	font-size: 11px;
+	overflow-x: wrap;
+	width: 320px;
 }
