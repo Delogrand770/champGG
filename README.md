@@ -24,6 +24,7 @@ Features include:
 
 # Screenshots
 Many configurable options
+<br>
 ![Alt text](screenshot1.png?raw=true "Main Menu")
 
 Quickly see which item sets are available for each role or champion
