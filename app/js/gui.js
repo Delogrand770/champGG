@@ -95,16 +95,20 @@ var GUI = {
 
 		//console.log("champions =>", GUI.champions);
 	},
+	done:function(){
+		GUI.drawChampTable();
+		GUI.changeWinHeight(620);
+		document.getElementById("champImgs").style.display = "none";
+		document.getElementById("ui1").style.display = "block";
+	},
 	countImage:function(){
 		GUI.imgTotals.count++;
 
-		document.getElementById('pbar').innerHTML = 'Updating.... [' + Math.round(GUI.imgTotals.count / GUI.imgTotals.total * 100) + '%]';
+		document.getElementById('pbar').innerHTML = '' + Math.round(GUI.imgTotals.count / GUI.imgTotals.total * 100) + '%';
 		document.getElementById('pbar').style.width = Math.round(GUI.imgTotals.count / GUI.imgTotals.total * 100) + "%";
 
 		if (GUI.imgTotals.count >= GUI.imgTotals.total){
-			GUI.drawChampTable();
-			document.getElementById("champImgs").style.display = "none";
-			document.getElementById("ui1").style.display = "block";
+			setTimeout("GUI.done()", 300);
 		}
 	},
 	drawChampTable:function(){
@@ -156,7 +160,12 @@ var GUI = {
 	},
 	maximizeWindow:function(){
 		var gui = require('nw.gui');
-		var win = gui.Window.get();		
+		var win = gui.Window.get();
 		win.maximize();
+	},
+	changeWinHeight:function(height){
+		var gui = require('nw.gui');
+		var win = gui.Window.get();	
+		win.height = height;
 	}
 };

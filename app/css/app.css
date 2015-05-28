@@ -55,7 +55,7 @@ img.saturate {
 	width: 0%;
 	color: black;
 }
-#status, #credits, #tipBox{
+#status, #credits, #tipBox, #champImgs{
 	font-size: 10px;
 	color: #808080;	
 }

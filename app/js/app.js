@@ -42,6 +42,7 @@ var App = {
 		document.getElementById("garena_td").addEventListener("click", App.checkBoxHelper);
 		document.getElementById("slowmode_td").addEventListener("click", App.checkBoxHelper);
 
+		//Checkbox show tips
 		document.getElementById("frequent_td").addEventListener("mouseover", App.showTip);
 		document.getElementById("winrate_td").addEventListener("mouseover", App.showTip);
 		document.getElementById("starters_td").addEventListener("mouseover", App.showTip);
@@ -51,6 +52,7 @@ var App = {
 		document.getElementById("garena_td").addEventListener("mouseover", App.showTip);
 		document.getElementById("slowmode_td").addEventListener("mouseover", App.showTip);
 
+		//Checkbox hide tips
 		document.getElementById("frequent_td").addEventListener("mouseout", App.hideTip);
 		document.getElementById("winrate_td").addEventListener("mouseout", App.hideTip);
 		document.getElementById("starters_td").addEventListener("mouseout", App.hideTip);
@@ -63,6 +65,10 @@ var App = {
 		//Buttons
 		document.getElementById("configLeague_btn").addEventListener("click", function(){App.setConfig('league')});
 		document.getElementById("configGarena_btn").addEventListener("click", function(){App.setConfig('garena')});
+		document.getElementById("configLeague_btn").addEventListener("mouseover", App.showTip);
+		document.getElementById("configGarena_btn").addEventListener("mouseover", App.showTip);
+		document.getElementById("configLeague_btn").addEventListener("mouseout", App.hideTip);
+		document.getElementById("configGarena_btn").addEventListener("mouseout", App.hideTip);
 		document.getElementById("startDownload_btn").addEventListener("click", App.iniDownload);
 	},
 	showTip:function(){
@@ -164,10 +170,10 @@ var App = {
 				App.log("Single Request mode enabled", "#0000ee");
 			}
 
-			App.log("Creating item sets for all champions...", "##808080");
+			App.log("Creating item sets for all champions...", "#808080");
 			var list = data.match(/<a href="([^"]*)" style="display:block">/g);
 			App.patch = App.getBetween(data, "<small>Patch <strong>", "</strong>");
-			App.log("Champion.gg item set data is for patch " + App.patch + "<br>", "##808080");
+			App.log("Champion.gg item set data is for patch " + App.patch + "<br>", "#808080");
 			var saveFolder = App.getSaveLocation(App.mode, true);
 			App.queue = [];
 
