@@ -25,13 +25,13 @@ Features include:
 # Screenshots
 Many configurable options
 <br>
-![Alt text](screenshot1.png?raw=true "Main Menu")
+![Alt text](screenshots/screenshot1.png?raw=true "Main Menu")
 
 Quickly see which item sets are available for each role or champion
-![Alt text](screenshot2.png?raw=true "Champion Data")
+![Alt text](screenshots/screenshot2.png?raw=true "Champion Data")
 
 Here is what it looks like in game for Annie playing middle
-![Alt text](screenshot3.png?raw=true "Ingame View")
+![Alt text](screenshots/screenshot3.png?raw=true "Ingame View")
 
 # Will Riot ban me?
 
