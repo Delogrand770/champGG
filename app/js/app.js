@@ -237,7 +237,7 @@ var App = {
 			return;
 		}
 		
-		var currentPatch = App.getBetween(page, "<small>Patch <strong>", "</strong>");
+		var currentPatch = App.getBetween(page, "<strong>", "</strong>") || "Unknown";
 		var firstMG = champJSON["firstItems"]["mostGames"];
 		var firstHWP = champJSON["firstItems"]["highestWinPercent"];
 		var fullMG = champJSON["items"]["mostGames"];
@@ -322,7 +322,6 @@ var App = {
 			"champion": champJSON["key"]
 		};
 
-
 		if (!App.isValidDir(App.mode)){
 			saveFolder += "PATCH " + currentPatch.replace('.','_');
 		}
@@ -333,16 +332,18 @@ var App = {
 			saveFolder = saveFolder + "/" + champJSON["key"] + "/Recommended";
 		}
 
+		saveFolder = saveFolder.trim();
+
 		if (!App.folderExists(saveFolder)) {
 			App.mkdir(saveFolder);
 		}
 
 		var fileName = currentPatch.replace('.','_') + "_" + roleFormatted + ".json";
 		fileName = saveFolder + "/" + fileName;
+		fileName = fileName.trim();
 
 		var itemSetJSON = JSON.stringify(itemSetArr, null, '\t');
 		App.writeFile(fileName, itemSetJSON);
-
 
 		GUI.processChamp(champJSON["key"], roleFormatted.toLowerCase());
 
